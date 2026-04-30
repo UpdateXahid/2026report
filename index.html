@@ -1,13 +1,48 @@
-import React, { useState } from 'react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, ScatterChart, Scatter, ZAxis,
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend
-} from 'recharts';
-import { 
-  TrendingUp, Home, Coffee, Users, Search, DollarSign, MapPin, 
-  Smartphone, ShoppingBag, Info, ArrowRight, ShieldCheck, Zap, Star, UserCheck, BarChart3
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Cafe and Coffee Insights Report | Pablo & Rusty's</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        body { font-family: 'Roboto', sans-serif; background-color: #FDF9F3; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Destructure Recharts components for global access
+        const { 
+            BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+            PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, ScatterChart, 
+            Scatter, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend 
+        } = window.Recharts;
+
+        // Destructure Lucide icons
+        const { 
+            TrendingUp, Home, Coffee, Users, Search, DollarSign, MapPin, 
+            Smartphone, ShoppingBag, Info, ArrowRight, ShieldCheck, Zap, Star, UserCheck, BarChart3 
+        } = lucide;
+
+        // PASTE YOUR ENTIRE REACT CODE BELOW STARTING FROM "const PR_COLORS = ..."
+        // Note: Change "export default App;" at the end to "const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<App />);"
 
 const PR_COLORS = {
   charcoal: '#2A2A2A', 
@@ -644,4 +679,16 @@ const App = () => {
   );
 };
 
-export default App;
+return (
+            <div className="min-h-screen bg-[#FDF9F3]">
+               {/* Dashboard Content */}
+            </div>
+          );
+        };
+
+        // Initialize the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
