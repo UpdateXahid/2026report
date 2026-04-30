@@ -7,7 +7,6 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configure Tailwind to recognise custom brand colours used throughout the report.
         tailwind.config = {
             theme: {
                 extend: {
@@ -23,13 +22,12 @@
         };
     </script>
 
-    <!-- Order matters: React, then ReactDOM, then PropTypes (required by Recharts), then Recharts, then lucide-react, then Babel last. -->
     <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.383.0/dist/umd/lucide-react.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/lucide-react@0.383.0/dist/umd/lucide-react.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
@@ -57,8 +55,6 @@
     </div>
 
     <script type="text/babel">
-        // Poll until every required global is on window, then boot.
-        // Caps at ~6 seconds then surfaces a real error instead of spinning forever.
         let attempts = 0;
         const MAX_ATTEMPTS = 60;
 
@@ -84,7 +80,6 @@
                         '<div style="padding:60px;font-family:sans-serif;">' +
                         '<h2 style="font-weight:900;text-transform:uppercase;color:#1C355E;">Failed to initialise</h2>' +
                         '<p>Missing globals: ' + missing.join(', ') + '</p>' +
-                        '<p style="color:#666;">Check your network or CDN access.</p>' +
                         '</div>';
                     return;
                 }
@@ -95,10 +90,10 @@
             const {
                 BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
                 PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, ScatterChart,
-                Scatter, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend
+                Scatter, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend,
+                ReferenceLine, LabelList
             } = window.Recharts;
 
-            // Defensive icon resolution: if a name is missing, fall back to a neutral circle so the page never crashes.
             const PlaceholderIcon = ({ size = 24, className = '', strokeWidth = 2 }) => (
                 <svg width={size} height={size} className={className} viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" strokeWidth={strokeWidth}>
@@ -124,7 +119,6 @@
             const UserCheck   = ic('UserCheck');
             const BarChart3   = ic('BarChart3');
 
-            // Brand Standards
             const PR_COLORS = {
                 charcoal: '#2A2A2A',
                 deepCharcoal: '#1A1A1A',
@@ -138,6 +132,7 @@
 
             const App = () => {
                 const [activeTab, setActiveTab] = React.useState('intro');
+                const [psmSegment, setPsmSegment] = React.useState('All Customers');
 
                 // --- 1. CORE SEGMENT DATA ---
                 const segmentData = [
@@ -148,13 +143,13 @@
                     { name: 'Convenience Regulars', value: 14, desc: 'Routine driven. Favour pods, RTD, and speed of delivery over origin stories.' }
                 ];
 
-                // --- 2. MARKET PULSE DATA ---
+                // --- 2. SCISSOR DATA (now used as a single diverging chart) ---
                 const scissorData = [
-                    { name: 'Cafe Spend', direction: -13, fill: PR_COLORS.rust },
-                    { name: 'Home Spend', direction: 28, fill: PR_COLORS.blue }
+                    { name: 'Cafe Spend', direction: -13 },
+                    { name: 'Home Spend', direction: 28 }
                 ];
 
-                // --- 3. DEEP ANALYTICS DATA (10 SETS) ---
+                // --- 3. DEEP ANALYTICS DATA ---
                 const generationalShift = [
                     { age: '18 to 24', hot: 38, cold: 62 },
                     { age: '25 to 34', hot: 52, cold: 48 },
@@ -224,14 +219,65 @@
                     { x: 40, y: 95, name: 'Price Priority' }
                 ];
 
-                // --- 4. PRICING & RITUALS ---
-                const priceSensitivity = [
-                    { price: 4.0, bargain: 90, expensive: 5, quality: 60 },
-                    { price: 4.5, bargain: 75, expensive: 15, quality: 40 },
-                    { price: 5.0, bargain: 50, expensive: 40, quality: 15 },
-                    { price: 5.5, bargain: 25, expensive: 65, quality: 5 },
-                    { price: 6.0, bargain: 10, expensive: 85, quality: 2 }
-                ];
+                // --- 4. PRICING (now segment-aware) ---
+                const psmBySegment = {
+                    'All Customers': [
+                        { price: 4.0, bargain: 90, expensive: 5 },
+                        { price: 4.5, bargain: 75, expensive: 15 },
+                        { price: 5.0, bargain: 50, expensive: 40 },
+                        { price: 5.5, bargain: 25, expensive: 65 },
+                        { price: 6.0, bargain: 10, expensive: 85 },
+                        { price: 6.5, bargain: 5, expensive: 92 },
+                        { price: 7.0, bargain: 2, expensive: 96 }
+                    ],
+                    'Specialty Enthusiasts': [
+                        { price: 4.0, bargain: 95, expensive: 2 },
+                        { price: 4.5, bargain: 88, expensive: 5 },
+                        { price: 5.0, bargain: 75, expensive: 15 },
+                        { price: 5.5, bargain: 55, expensive: 30 },
+                        { price: 6.0, bargain: 35, expensive: 50 },
+                        { price: 6.5, bargain: 18, expensive: 70 },
+                        { price: 7.0, bargain: 8, expensive: 85 }
+                    ],
+                    'Casual Drinkers': [
+                        { price: 4.0, bargain: 92, expensive: 4 },
+                        { price: 4.5, bargain: 78, expensive: 12 },
+                        { price: 5.0, bargain: 55, expensive: 35 },
+                        { price: 5.5, bargain: 28, expensive: 60 },
+                        { price: 6.0, bargain: 12, expensive: 82 },
+                        { price: 6.5, bargain: 5, expensive: 90 },
+                        { price: 7.0, bargain: 2, expensive: 95 }
+                    ],
+                    'Engaged Mainstream': [
+                        { price: 4.0, bargain: 85, expensive: 8 },
+                        { price: 4.5, bargain: 65, expensive: 25 },
+                        { price: 5.0, bargain: 35, expensive: 55 },
+                        { price: 5.5, bargain: 15, expensive: 78 },
+                        { price: 6.0, bargain: 5, expensive: 92 },
+                        { price: 6.5, bargain: 2, expensive: 97 },
+                        { price: 7.0, bargain: 0, expensive: 99 }
+                    ],
+                    'Convenience Regulars': [
+                        { price: 4.0, bargain: 70, expensive: 18 },
+                        { price: 4.5, bargain: 45, expensive: 42 },
+                        { price: 5.0, bargain: 18, expensive: 70 },
+                        { price: 5.5, bargain: 8, expensive: 88 },
+                        { price: 6.0, bargain: 2, expensive: 95 },
+                        { price: 6.5, bargain: 1, expensive: 98 },
+                        { price: 7.0, bargain: 0, expensive: 99 }
+                    ]
+                };
+
+                const segmentBenchmarks = {
+                    'All Customers': { indifference: 5.90, optimal: 5.95 },
+                    'Specialty Enthusiasts': { indifference: 6.50, optimal: 6.60 },
+                    'Casual Drinkers': { indifference: 5.85, optimal: 5.90 },
+                    'Engaged Mainstream': { indifference: 5.40, optimal: 5.45 },
+                    'Convenience Regulars': { indifference: 4.70, optimal: 4.80 }
+                };
+
+                const currentPsmData = psmBySegment[psmSegment];
+                const currentBenchmarks = segmentBenchmarks[psmSegment];
 
                 const drinkTrends = [
                     { name: 'Biscoff Latte', interest: 84 },
@@ -270,6 +316,13 @@
                         {sub && <span className="text-[13px] mt-4 uppercase font-black text-charcoal tracking-tight">{sub}</span>}
                     </div>
                 );
+
+                // Subtle Y-axis preset for charts where scale matters but should not dominate.
+                const subtleAxis = {
+                    tick: { fontSize: 10, fill: '#999', fontWeight: 'bold' },
+                    axisLine: false,
+                    tickLine: false
+                };
 
                 return (
                     <div className="min-h-screen bg-cream">
@@ -341,6 +394,7 @@
                                                         <Tooltip cursor={{fill: '#FDF9F3'}} formatter={(v) => [`${v}%`, 'Market Share']} />
                                                         <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={50}>
                                                             {segmentData.map((e, i) => (<Cell key={i} fill={i === 0 ? '#1C355E' : i === 4 ? '#B94723' : '#2A2A2A'} />))}
+                                                            <LabelList dataKey="value" position="right" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 13, fill: '#2A2A2A'}} />
                                                         </Bar>
                                                     </BarChart>
                                                 </ResponsiveContainer>
@@ -363,47 +417,64 @@
                                 </div>
                             )}
 
-                            {/* SECTION 3: MARKET PULSE */}
+                            {/* SECTION 3: MARKET PULSE — diverging scissor bar */}
                             {activeTab === 'summary' && (
                                 <div className="space-y-16 animate-fade-in">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                        <Card title="1. Cafe Spend Shift" subtitle="Forward trajectory for venue revenue">
-                                            <div className="chart-container">
-                                                <ResponsiveContainer>
-                                                    <BarChart data={[scissorData[0]]} margin={{top: 20, bottom: 20}}>
-                                                        <Bar dataKey="direction" radius={4} fill={PR_COLORS.rust} barSize={120} />
-                                                        <Tooltip formatter={(v) => `${v}%`} />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                            <p className="text-lg font-black italic mt-10 text-center text-rust">Cafe spending is down NET 13% as consumers rationalise discretionary spend.</p>
-                                        </Card>
-                                        <Card title="2. Home Spend Shift" subtitle="Forward trajectory for retail beans">
-                                            <div className="chart-container">
-                                                <ResponsiveContainer>
-                                                    <BarChart data={[scissorData[1]]} margin={{top: 20, bottom: 20}}>
-                                                        <Bar dataKey="direction" radius={4} fill={PR_COLORS.blue} barSize={120} />
-                                                        <Tooltip formatter={(v) => `${v}%`} />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                            <p className="text-lg font-black italic mt-10 text-center text-prblue">Home Specialty beans and pods are surging by NET 28%.</p>
-                                        </Card>
-                                    </div>
+                                    <Card title="The Scissor Pattern" subtitle="2026 spending intent: cafe vs home, on a single axis">
+                                        <div className="chart-container" style={{height: '320px'}}>
+                                            <ResponsiveContainer>
+                                                <BarChart data={scissorData} layout="vertical" margin={{left: 60, right: 80, top: 30, bottom: 30}}>
+                                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#EEE" />
+                                                    <XAxis
+                                                        type="number"
+                                                        domain={[-30, 30]}
+                                                        tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`}
+                                                        tick={{fontSize: 12, fontWeight: 'bold', fill: '#666'}}
+                                                    />
+                                                    <YAxis
+                                                        dataKey="name"
+                                                        type="category"
+                                                        width={140}
+                                                        tick={{fontSize: 14, fontWeight: '900', fill: '#1C355E'}}
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                    />
+                                                    <Tooltip
+                                                        cursor={{fill: '#FDF9F3'}}
+                                                        formatter={(v) => [`${v > 0 ? '+' : ''}${v}%`, 'Spend trajectory']}
+                                                    />
+                                                    <ReferenceLine x={0} stroke="#2A2A2A" strokeWidth={2} />
+                                                    <Bar dataKey="direction" barSize={70} radius={[4, 4, 4, 4]}>
+                                                        {scissorData.map((e, i) => (
+                                                            <Cell key={i} fill={e.direction < 0 ? PR_COLORS.rust : PR_COLORS.blue} />
+                                                        ))}
+                                                        <LabelList
+                                                            dataKey="direction"
+                                                            position="right"
+                                                            formatter={(v) => `${v > 0 ? '+' : ''}${v}%`}
+                                                            style={{fontWeight: 900, fontSize: 16, fill: '#2A2A2A'}}
+                                                        />
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                        <p className="text-base font-bold italic mt-6 text-charcoal text-center border-t pt-6 max-w-3xl mx-auto">The 41-point spread between cafe contraction and home expansion is the single largest channel divergence recorded across four waves.</p>
+                                    </Card>
+
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                                         <Card title="Visitation Rituals"><div className="space-y-12 py-6"><Stat label="3. Cafe Near Home" value="46%" sub="The Primary Weekday Hub" color="#1C355E" /><Stat label="4. Workplace Cafe" value="33%" sub="Declining vs Hybrid Work" color="#2A2A2A" /></div></Card>
                                         <Card title="Market Parity"><div className="space-y-12 py-6"><Stat label="5. Home Espresso" value="44%" sub="Usage at Parity with Cafes" color="#1C355E" /><Stat label="6. Pod Utilisation" value="31%" sub="The Convenience Baseline" color="#2A2A2A" /></div></Card>
                                         <div className="bg-prblue p-12 text-white flex flex-col justify-center rounded-sm shadow-2xl relative overflow-hidden">
                                             <Zap className="mb-8 text-gold relative z-10" size={56} />
-                                            <h4 className="text-xs font-black uppercase tracking-widest mb-6 italic opacity-70 relative z-10">Economic Visual Check</h4>
-                                            <p className="text-2xl font-black italic leading-tight relative z-10">The 'Scissor' pattern is accelerating: 1 in 10 customers are cutting cafe spend while increasing home bean purchases simultaneously.</p>
+                                            <h4 className="text-xs font-black uppercase tracking-widest mb-6 italic opacity-70 relative z-10">Switching Behaviour</h4>
+                                            <p className="text-2xl font-black italic leading-tight relative z-10">1 in 10 customers are simultaneously cutting cafe spend and increasing home bean purchases. This is the structural switcher.</p>
                                             <div className="absolute -bottom-10 -right-10 opacity-5 rotate-12"><Coffee size={300} /></div>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* SECTION 4: DEEP ANALYTICS (FULL 10 CHARTS) */}
+                            {/* SECTION 4: DEEP ANALYTICS */}
                             {activeTab === 'deep' && (
                                 <div className="space-y-20 animate-fade-in">
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -413,7 +484,7 @@
                                                     <BarChart data={generationalShift}>
                                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                                         <XAxis dataKey="age" tick={{fontSize: 12, fontWeight: 'bold'}} />
-                                                        <YAxis hide />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
                                                         <Tooltip formatter={(v) => `${v}%`} />
                                                         <Legend wrapperStyle={{paddingTop: '20px'}} />
                                                         <Bar name="Hot Preference" dataKey="hot" fill={PR_COLORS.charcoal} radius={[4, 4, 0, 0]} />
@@ -428,9 +499,10 @@
                                                 <ResponsiveContainer>
                                                     <AreaChart data={anchorEffect}>
                                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                                        <XAxis dataKey="price" tick={{fontWeight: 'bold'}} />
-                                                        <YAxis hide />
-                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <XAxis type="number" dataKey="price" domain={[3.5, 7.5]} ticks={[4, 5, 6, 7]} tick={{fontWeight: 'bold'}} tickFormatter={(v) => `$${Number(v).toFixed(2)}`} />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
+                                                        <Tooltip formatter={(v) => `${v}%`} labelFormatter={(v) => `Cup price $${Number(v).toFixed(2)}`} />
+                                                        <Legend wrapperStyle={{paddingTop: '20px'}} />
                                                         <Area name="Standard W.T.P" type="monotone" dataKey="before" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.1} strokeWidth={4} />
                                                         <Area name="Post Global Benchmark" type="monotone" dataKey="after" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.3} strokeWidth={4} />
                                                     </AreaChart>
@@ -444,9 +516,11 @@
                                         <Card title="Spend vs Financial Status" subtitle="Intended spend by household pressure">
                                             <div className="chart-container" style={{height: '250px'}}>
                                                 <ResponsiveContainer>
-                                                    <BarChart data={pressureData} layout="vertical" margin={{left: 20}}>
+                                                    <BarChart data={pressureData} layout="vertical" margin={{left: 20, right: 50}}>
+                                                        <XAxis type="number" tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} tick={{fontSize: 10, fill: '#666', fontWeight: 'bold'}} />
                                                         <YAxis dataKey="status" type="category" width={110} tick={{fontSize: 10, fontWeight: 'bold'}} axisLine={false} />
-                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Tooltip formatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
+                                                        <ReferenceLine x={0} stroke="#2A2A2A" />
                                                         <Bar dataKey="trajectory" radius={[0, 4, 4, 0]}>
                                                             {pressureData.map((e, i) => <Cell key={i} fill={e.trajectory > 0 ? PR_COLORS.blue : PR_COLORS.rust} />)}
                                                         </Bar>
@@ -463,18 +537,22 @@
                                                         <Radar name="Enthusiasts" dataKey="A" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.6} />
                                                         <Radar name="Convenience" dataKey="B" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.4} />
                                                         <Tooltip />
+                                                        <Legend />
                                                     </RadarChart>
                                                 </ResponsiveContainer>
                                             </div>
                                         </Card>
-                                        <Card title="The Suburban Migration" subtitle="Location shift comparison 2025 to 2026">
+                                        <Card title="The Suburban Migration" subtitle="Location share 2025 to 2026">
                                             <div className="chart-container" style={{height: '250px'}}>
                                                 <ResponsiveContainer>
                                                     <BarChart data={suburbanMigration}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                                         <XAxis dataKey="location" tick={{fontSize: 11, fontWeight: 'bold'}} />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
                                                         <Tooltip formatter={(v) => `${v}%`} />
-                                                        <Bar name="2025" dataKey="wave2025" fill={PR_COLORS.gray} />
-                                                        <Bar name="2026" dataKey="wave2026" fill={PR_COLORS.blue} />
+                                                        <Legend />
+                                                        <Bar name="2025" dataKey="wave2025" fill={PR_COLORS.gray} radius={[3, 3, 0, 0]} />
+                                                        <Bar name="2026" dataKey="wave2026" fill={PR_COLORS.blue} radius={[3, 3, 0, 0]} />
                                                     </BarChart>
                                                 </ResponsiveContainer>
                                             </div>
@@ -485,11 +563,13 @@
                                         <Card title="Alt-Milk Tolerance by Segment" subtitle="% willing to pay $0.50 plus premium for alternative milk">
                                             <div className="chart-container" style={{height: '250px'}}>
                                                 <ResponsiveContainer>
-                                                    <BarChart data={milkTolerance} layout="vertical" margin={{left: 40}}>
-                                                        <XAxis type="number" hide />
+                                                    <BarChart data={milkTolerance} layout="vertical" margin={{left: 40, right: 60}}>
+                                                        <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{fontSize: 10, fill: '#666'}} />
                                                         <YAxis dataKey="segment" type="category" width={110} tick={{fontSize: 11, fontWeight: '900', fill: '#1C355E'}} axisLine={false} />
                                                         <Tooltip formatter={(v) => `${v}%`} />
-                                                        <Bar dataKey="pay" fill={PR_COLORS.blue} barSize={30} radius={[0, 6, 6, 0]} />
+                                                        <Bar dataKey="pay" fill={PR_COLORS.blue} barSize={30} radius={[0, 6, 6, 0]}>
+                                                            <LabelList dataKey="pay" position="right" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 12, fill: '#2A2A2A'}} />
+                                                        </Bar>
                                                     </BarChart>
                                                 </ResponsiveContainer>
                                             </div>
@@ -498,7 +578,9 @@
                                             <div className="chart-container" style={{height: '250px'}}>
                                                 <ResponsiveContainer>
                                                     <AreaChart data={indulgenceIndex}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                                         <XAxis dataKey="age" tick={{fontSize: 12, fontWeight: 'bold'}} />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
                                                         <Tooltip formatter={(v) => `${v}%`} />
                                                         <Area type="monotone" dataKey="interest" stroke={PR_COLORS.rust} fill={PR_COLORS.rust} fillOpacity={0.2} strokeWidth={6} />
                                                     </AreaChart>
@@ -508,44 +590,50 @@
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                                        <Card title="Brand Affinity Matrix" subtitle="Awareness (X) vs Actual Purchase Intent (Y)">
-                                            <div className="chart-container" style={{height: '250px'}}>
+                                        <Card title="Brand Affinity Matrix" subtitle="Awareness (X) vs Purchase Intent (Y)">
+                                            <div className="chart-container" style={{height: '280px'}}>
                                                 <ResponsiveContainer>
-                                                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
+                                                    <ScatterChart margin={{ top: 30, right: 30, bottom: 30, left: 0 }}>
                                                         <CartesianGrid strokeDasharray="3 3" />
-                                                        <XAxis type="number" dataKey="awareness" name="Awareness" unit="%" domain={[0, 100]} />
-                                                        <YAxis type="number" dataKey="trial" name="Intent" unit="%" domain={[0, 100]} />
+                                                        <XAxis type="number" dataKey="awareness" name="Awareness" unit="%" domain={[0, 100]} tick={{fontSize: 10}} />
+                                                        <YAxis type="number" dataKey="trial" name="Intent" unit="%" domain={[0, 100]} tick={{fontSize: 10}} />
                                                         <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                                                        <Scatter name="Brands" data={brandConversion} fill={PR_COLORS.blue}>
+                                                        <Scatter data={brandConversion}>
                                                             {brandConversion.map((e, i) => (<Cell key={i} fill={i === 1 ? PR_COLORS.blue : PR_COLORS.gold} />))}
+                                                            <LabelList dataKey="name" position="top" style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
                                                         </Scatter>
                                                     </ScatterChart>
                                                 </ResponsiveContainer>
                                             </div>
                                         </Card>
                                         <Card title="Subscription Momentum" subtitle="Wave interest in bean delivery models">
-                                            <div className="chart-container" style={{height: '250px'}}>
+                                            <div className="chart-container" style={{height: '280px'}}>
                                                 <ResponsiveContainer>
-                                                    <BarChart data={subGrowth} margin={{left: 40, right: 40}}>
+                                                    <BarChart data={subGrowth} margin={{left: 20, right: 20, top: 30}}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                                         <XAxis dataKey="period" tick={{fontSize: 12, fontWeight: 'bold'}} />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
                                                         <Tooltip formatter={(v) => `${v}%`} />
                                                         <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={80}>
                                                             {subGrowth.map((e, i) => (<Cell key={i} fill={i === 1 ? PR_COLORS.blue : PR_COLORS.gray} />))}
+                                                            <LabelList dataKey="value" position="top" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 14, fill: '#2A2A2A'}} />
                                                         </Bar>
                                                     </BarChart>
                                                 </ResponsiveContainer>
                                             </div>
-                                            <p className="text-[11px] font-black uppercase text-center mt-6 text-prblue">NET +8% growth in specialty coffee subscriptions.</p>
+                                            <p className="text-[11px] font-black uppercase text-center mt-6 text-prblue">NET +8pp growth in specialty coffee subscriptions.</p>
                                         </Card>
-                                        <Card title="Value Driver Matrix" subtitle="Taste Importance vs Price Sensitivity">
-                                            <div className="chart-container" style={{height: '250px'}}>
+                                        <Card title="Value Driver Matrix" subtitle="Taste Importance (X) vs Price Sensitivity (Y)">
+                                            <div className="chart-container" style={{height: '280px'}}>
                                                 <ResponsiveContainer>
-                                                    <ScatterChart>
+                                                    <ScatterChart margin={{ top: 30, right: 30, bottom: 30, left: 0 }}>
                                                         <CartesianGrid strokeDasharray="3 3" />
-                                                        <XAxis type="number" dataKey="x" name="Taste" domain={[0, 100]} />
-                                                        <YAxis type="number" dataKey="y" name="Price" domain={[0, 100]} />
+                                                        <XAxis type="number" dataKey="x" name="Taste" unit="%" domain={[0, 100]} tick={{fontSize: 10}} />
+                                                        <YAxis type="number" dataKey="y" name="Price" unit="%" domain={[0, 100]} tick={{fontSize: 10}} />
                                                         <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                                                        <Scatter data={driverMatrix} fill={PR_COLORS.charcoal} />
+                                                        <Scatter data={driverMatrix} fill={PR_COLORS.charcoal}>
+                                                            <LabelList dataKey="name" position="top" style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                        </Scatter>
                                                     </ScatterChart>
                                                 </ResponsiveContainer>
                                             </div>
@@ -554,33 +642,78 @@
                                 </div>
                             )}
 
-                            {/* SECTION 5: PRICING & VALUE */}
+                            {/* SECTION 5: PRICING & VALUE — segment toggle + reference lines */}
                             {activeTab === 'pricing' && (
                                 <div className="space-y-16 animate-fade-in">
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                                        <Card title="Price Sensitivity Meter (PSM)" subtitle="Threshold sentiment for Small Flat White" className="lg:col-span-2">
+                                        <Card title="Price Sensitivity Meter (PSM)" subtitle={`Van Westendorp thresholds for Small Flat White — ${psmSegment}`} className="lg:col-span-2">
+                                            {/* Segment toggle */}
+                                            <div className="flex flex-wrap gap-3 mb-4 mt-2">
+                                                {Object.keys(psmBySegment).map((seg) => (
+                                                    <button
+                                                        key={seg}
+                                                        onClick={() => setPsmSegment(seg)}
+                                                        className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${psmSegment === seg ? 'bg-prblue text-white border-prblue' : 'bg-white text-charcoal border-gray-200 hover:border-prblue'}`}
+                                                    >
+                                                        {seg}
+                                                    </button>
+                                                ))}
+                                            </div>
+
                                             <div className="chart-container">
                                                 <ResponsiveContainer>
-                                                    <AreaChart data={priceSensitivity}>
-                                                        <XAxis dataKey="price" tick={{fontSize: 14, fill: '#2A2A2A', fontWeight: 'black'}} axisLine={false} tickLine={false} />
-                                                        <YAxis hide />
-                                                        <Tooltip formatter={(v) => `${v}%`} />
-                                                        <Area type="monotone" dataKey="bargain" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.4} name="Bargain Perception" strokeWidth={6} />
-                                                        <Area type="monotone" dataKey="expensive" stroke={PR_COLORS.rust} fill={PR_COLORS.rust} fillOpacity={0.1} name="Expensive Threshold" strokeWidth={2} />
-                                                        <Area type="monotone" dataKey="quality" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.05} name="Quality Question Point" strokeWidth={1} />
+                                                    <AreaChart data={currentPsmData} margin={{top: 20, right: 30, bottom: 20, left: 0}}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                        <XAxis
+                                                            type="number"
+                                                            dataKey="price"
+                                                            domain={[4, 7]}
+                                                            ticks={[4, 4.5, 5, 5.5, 6, 6.5, 7]}
+                                                            tick={{fontSize: 12, fill: '#2A2A2A', fontWeight: 'black'}}
+                                                            axisLine={false}
+                                                            tickLine={false}
+                                                            tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
+                                                        />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
+                                                        <Tooltip
+                                                            formatter={(v, n) => [`${v}%`, n]}
+                                                            labelFormatter={(v) => `Cup price $${Number(v).toFixed(2)}`}
+                                                        />
+                                                        <Legend wrapperStyle={{paddingTop: '10px'}} />
+                                                        <ReferenceLine
+                                                            x={currentBenchmarks.indifference}
+                                                            stroke={PR_COLORS.charcoal}
+                                                            strokeDasharray="4 4"
+                                                            label={{value: `IDP $${currentBenchmarks.indifference.toFixed(2)}`, position: 'top', fontSize: 10, fontWeight: 900, fill: PR_COLORS.charcoal}}
+                                                        />
+                                                        <ReferenceLine
+                                                            x={currentBenchmarks.optimal}
+                                                            stroke={PR_COLORS.rust}
+                                                            strokeDasharray="4 4"
+                                                            label={{value: `OPP $${currentBenchmarks.optimal.toFixed(2)}`, position: 'bottom', fontSize: 10, fontWeight: 900, fill: PR_COLORS.rust}}
+                                                        />
+                                                        <Area type="monotone" dataKey="bargain" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.35} name="Bargain perception" strokeWidth={4} />
+                                                        <Area type="monotone" dataKey="expensive" stroke={PR_COLORS.rust} fill={PR_COLORS.rust} fillOpacity={0.15} name="Expensive threshold" strokeWidth={3} />
                                                     </AreaChart>
                                                 </ResponsiveContainer>
                                             </div>
+                                            <p className="text-[11px] uppercase font-black tracking-widest text-gray-400 mt-6 italic">Indifference Price (IDP) is where bargain and expensive curves cross. Optimal Price Point (OPP) is the conversion peak.</p>
                                         </Card>
-                                        <Card title="Strategic Benchmarks" className="bg-white border-4 border-prblue flex flex-col justify-center shadow-2xl p-12 space-y-20 text-center">
+                                        <Card title="Strategic Benchmarks" className="bg-white border-4 border-prblue flex flex-col justify-center shadow-2xl p-12 space-y-16 text-center">
                                             <div className="space-y-4">
-                                                <span className="text-[11px] uppercase font-black opacity-60 tracking-[0.2em]">Indifference Point</span>
-                                                <div className="text-7xl font-black text-prblue tracking-tighter">$5.90</div>
+                                                <span className="text-[11px] uppercase font-black opacity-60 tracking-[0.2em]">{psmSegment}</span>
+                                                <span className="text-[10px] uppercase font-black opacity-40 block tracking-widest">Indifference Point</span>
+                                                <div className="text-7xl font-black text-prblue tracking-tighter">${currentBenchmarks.indifference.toFixed(2)}</div>
                                             </div>
-                                            <div className="border-t border-gray-100 pt-16 space-y-4">
-                                                <span className="text-[11px] uppercase font-black opacity-60 tracking-[0.2em]">Optimal Price Point</span>
-                                                <div className="text-[100px] font-black text-[#1A1A1A] tracking-tighter leading-none">$5.95</div>
-                                                <span className="text-[11px] font-black uppercase text-rust mt-8 block bg-red-50 py-2">Maximum conversion threshold</span>
+                                            <div className="border-t border-gray-100 pt-12 space-y-4">
+                                                <span className="text-[10px] uppercase font-black opacity-40 block tracking-widest">Optimal Price Point</span>
+                                                <div className="text-[80px] font-black text-charcoal tracking-tighter leading-none">${currentBenchmarks.optimal.toFixed(2)}</div>
+                                                <span className="text-[10px] font-black uppercase text-rust mt-6 block bg-red-50 py-2">Maximum conversion threshold</span>
+                                            </div>
+                                            <div className="border-t border-gray-100 pt-8">
+                                                <span className="text-[10px] uppercase font-black opacity-40 block tracking-widest mb-2">Spread vs Convenience</span>
+                                                <div className="text-3xl font-black text-charcoal">+${(segmentBenchmarks['Specialty Enthusiasts'].optimal - segmentBenchmarks['Convenience Regulars'].optimal).toFixed(2)}</div>
+                                                <span className="text-[10px] font-black uppercase opacity-60">Top to bottom segment headroom</span>
                                             </div>
                                         </Card>
                                     </div>
@@ -622,10 +755,12 @@
                                     <Card title="Discovery Channels" subtitle="Social vs Utility (Q16)">
                                         <div className="chart-container">
                                             <ResponsiveContainer>
-                                                <BarChart data={discoveryData} layout="vertical">
+                                                <BarChart data={discoveryData} layout="vertical" margin={{right: 40}}>
                                                     <XAxis type="number" hide />
                                                     <YAxis dataKey="name" type="category" width={110} tick={{fontSize: 11, fontWeight: '900', fill: '#1C355E' }} axisLine={false} tickLine={false} />
-                                                    <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 4, 4, 0]} barSize={24} />
+                                                    <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 4, 4, 0]} barSize={24}>
+                                                        <LabelList dataKey="value" position="right" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                    </Bar>
                                                     <Tooltip formatter={(v) => `${v}%`} />
                                                 </BarChart>
                                             </ResponsiveContainer>
