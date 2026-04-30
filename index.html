@@ -134,6 +134,7 @@
                 const [activeTab, setActiveTab] = React.useState('intro');
                 const [psmSegment, setPsmSegment] = React.useState('All Customers');
                 const [discoveryAge, setDiscoveryAge] = React.useState('All Ages');
+                const [personaSegment, setPersonaSegment] = React.useState('Specialty Enthusiasts');
 
                 // --- 1. CORE SEGMENT DATA ---
                 const segmentData = [
@@ -346,15 +347,15 @@
 
                 const freqSpendMatrix = [
                     // 2025 baseline (ghost positions)
-                    { segment: 'Specialty Enthusiasts', visits: 3.5, spend: 7.20, revenue: 27, year: '2025' },
-                    { segment: 'Casual Drinkers', visits: 2.4, spend: 5.80, revenue: 24, year: '2025' },
-                    { segment: 'Engaged Mainstream', visits: 4.0, spend: 5.20, revenue: 27, year: '2025' },
-                    { segment: 'Convenience Regulars', visits: 5.2, spend: 4.00, revenue: 16, year: '2025' },
+                    { segment: 'Specialty Enthusiasts', visits: 3.5, spend: 7.20, revenue: 34, year: '2025' },
+                    { segment: 'Casual Drinkers', visits: 2.4, spend: 5.80, revenue: 21, year: '2025' },
+                    { segment: 'Engaged Mainstream', visits: 4.0, spend: 5.20, revenue: 26, year: '2025' },
+                    { segment: 'Convenience Regulars', visits: 5.2, spend: 4.00, revenue: 19, year: '2025' },
                     // 2026 current
-                    { segment: 'Specialty Enthusiasts', visits: 2.8, spend: 8.50, revenue: 32, year: '2026' },
-                    { segment: 'Casual Drinkers', visits: 1.9, spend: 6.20, revenue: 26, year: '2026' },
-                    { segment: 'Engaged Mainstream', visits: 3.5, spend: 5.50, revenue: 22, year: '2026' },
-                    { segment: 'Convenience Regulars', visits: 4.8, spend: 4.20, revenue: 12, year: '2026' }
+                    { segment: 'Specialty Enthusiasts', visits: 2.8, spend: 8.50, revenue: 40, year: '2026' },
+                    { segment: 'Casual Drinkers', visits: 1.9, spend: 6.20, revenue: 18, year: '2026' },
+                    { segment: 'Engaged Mainstream', visits: 3.5, spend: 5.50, revenue: 24, year: '2026' },
+                    { segment: 'Convenience Regulars', visits: 4.8, spend: 4.20, revenue: 18, year: '2026' }
                 ];
 
                 const specialtyPersona = {
@@ -398,6 +399,108 @@
                         { quote: "I'll pay $7 for a great flat white. I won't pay $5 for a bad one.", attribution: '41, Brisbane' }
                     ]
                 };
+
+                const otherPersonas = {
+                    'Casual Drinkers': {
+                        customerShare: 24, customerDelta: 0,
+                        revenueShare: 18, revenueDelta: -3,
+                        visits: 1.9, visitsDelta: -0.5,
+                        spend: 6.20, spendDelta: 0.40,
+                        tagline: 'The third-space defender.',
+                        description: 'Cafes are social infrastructure for this segment. They visit less often than they did in 2025 but value ambience, location, and human interaction over coffee specifics.',
+                        soWhat: [
+                            { title: 'Third-space loyalty', text: 'Loyal to neighbourhood cafes. Switching cost is high once they have a regular spot.' },
+                            { title: 'Atmosphere over origin', text: 'Wi-Fi, music, table size, and friendly baristas matter more than bean origin or grind specifics.' },
+                            { title: 'Loyalty programs convert', text: 'Responds to "regular" status and milestone rewards. A free 10th coffee genuinely shifts behaviour here.' }
+                        ],
+                        age: [
+                            { range: '18-24', share: 22 }, { range: '25-34', share: 38 },
+                            { range: '35-44', share: 18 }, { range: '45-54', share: 12 },
+                            { range: '55-64', share: 7 }, { range: '65+', share: 3 }
+                        ],
+                        discovery: [
+                            { name: 'Instagram', value: 38 }, { name: 'Word of Mouth', value: 36 },
+                            { name: 'TikTok', value: 24 }, { name: 'Google Maps', value: 22 },
+                            { name: 'Facebook', value: 18 }
+                        ]
+                    },
+                    'Engaged Mainstream': {
+                        customerShare: 20, customerDelta: -2,
+                        revenueShare: 24, revenueDelta: -2,
+                        visits: 3.5, visitsDelta: -0.5,
+                        spend: 5.50, spendDelta: 0.30,
+                        tagline: 'The price-pressure canary.',
+                        description: 'Regular cafe-goers under economic squeeze. The first segment to trade down when prices move. Watch this group for early signals on broader market shifts.',
+                        soWhat: [
+                            { title: 'Trade-down risk', text: 'Most price-sensitive of regular cafe-goers. A $0.50 cup increase produces measurable visit reduction within weeks.' },
+                            { title: 'Habit-driven', text: 'Daily or near-daily ritual. Lose them once and they may not return for months — habits reform around alternatives.' },
+                            { title: 'Family economics', text: 'Often the household coffee buyer. Value claims must work for everyday budget pressure, not aspirational positioning.' }
+                        ],
+                        age: [
+                            { range: '18-24', share: 6 }, { range: '25-34', share: 18 },
+                            { range: '35-44', share: 32 }, { range: '45-54', share: 26 },
+                            { range: '55-64', share: 12 }, { range: '65+', share: 6 }
+                        ],
+                        discovery: [
+                            { name: 'Word of Mouth', value: 45 }, { name: 'Facebook', value: 32 },
+                            { name: 'Google Maps', value: 22 }, { name: 'Instagram', value: 18 },
+                            { name: 'TikTok', value: 8 }
+                        ]
+                    },
+                    'Convenience Regulars': {
+                        customerShare: 14, customerDelta: -2,
+                        revenueShare: 18, revenueDelta: -1,
+                        visits: 4.8, visitsDelta: -0.4,
+                        spend: 4.20, spendDelta: 0.20,
+                        tagline: 'The pod and RTD opportunity.',
+                        description: 'Highest frequency, lowest specialty engagement. Routine-driven. Speed and predictability win over origin or technique.',
+                        soWhat: [
+                            { title: 'Format over flavour', text: 'Wins go to grab-and-go, drive-through, pods, RTD. Specialty positioning is the wrong frame for this segment.' },
+                            { title: 'Brand agnostic', text: 'Will switch for convenience without hesitation. Location and speed are the only durable moats.' },
+                            { title: 'Subscription headroom', text: 'High frequency makes pod and bean subscriptions economically viable. Auto-replenish is a structural fit.' }
+                        ],
+                        age: [
+                            { range: '18-24', share: 8 }, { range: '25-34', share: 16 },
+                            { range: '35-44', share: 22 }, { range: '45-54', share: 26 },
+                            { range: '55-64', share: 18 }, { range: '65+', share: 10 }
+                        ],
+                        discovery: [
+                            { name: 'Routine / habit', value: 52 }, { name: 'Workplace', value: 38 },
+                            { name: 'Word of Mouth', value: 22 }, { name: 'In-store', value: 18 },
+                            { name: 'Facebook', value: 12 }
+                        ]
+                    },
+                    'Non Category': {
+                        customerShare: 16, customerDelta: 1,
+                        revenueShare: 0, revenueDelta: 0,
+                        visits: 0.4, visitsDelta: -0.2,
+                        spend: 0, spendDelta: 0,
+                        tagline: 'The awareness-conversion target.',
+                        description: 'Low or zero category participation today. About 30% would consider trying specialty if introduced through trusted channels. The biggest white-space opportunity in the deck.',
+                        soWhat: [
+                            { title: 'Conversion candidates', text: '~30% are coffee-curious — open to trial via family, friends, or workplace introduction. Trust mediates entry.' },
+                            { title: 'Tea-leaning', text: 'Many drink tea or other hot beverages. Cross-category positioning may convert faster than direct specialty pitch.' },
+                            { title: 'Long horizon', text: 'Conversion timelines run in quarters, not weeks. Steady brand presence beats promotional spikes for this group.' }
+                        ],
+                        age: [
+                            { range: '18-24', share: 18 }, { range: '25-34', share: 12 },
+                            { range: '35-44', share: 14 }, { range: '45-54', share: 18 },
+                            { range: '55-64', share: 22 }, { range: '65+', share: 16 }
+                        ],
+                        discovery: [
+                            { name: 'Word of Mouth', value: 32 }, { name: 'Family / friends', value: 28 },
+                            { name: 'Workplace intro', value: 18 }, { name: 'Instagram', value: 12 },
+                            { name: 'In-store sample', value: 10 }
+                        ]
+                    }
+                };
+
+                const stateData = [
+                    { state: 'NSW', cafeSpend: -10, specialtyShare: 30, optimalPrice: 6.10, homeEquip: 52 },
+                    { state: 'VIC', cafeSpend: -15, specialtyShare: 32, optimalPrice: 6.20, homeEquip: 56 },
+                    { state: 'QLD', cafeSpend: -12, specialtyShare: 22, optimalPrice: 5.70, homeEquip: 41 },
+                    { state: 'WA',  cafeSpend: -16, specialtyShare: 25, optimalPrice: 5.85, homeEquip: 47 }
+                ];
 
                 const addonsData = [
                     { item: 'Large Size', willingness: 96, price: '+$1.00' },
@@ -502,7 +605,7 @@
                                 {[
                                     {id: 'intro', label: 'Introduction', icon: Info},
                                     {id: 'audiences', label: 'Audience Profiles', icon: UserCheck},
-                                    {id: 'persona', label: 'Specialty Persona', icon: Star},
+                                    {id: 'persona', label: 'Personas', icon: Star},
                                     {id: 'summary', label: 'Market Pulse', icon: TrendingUp},
                                     {id: 'deep', label: 'Deep Analytics', icon: BarChart3},
                                     {id: 'pricing', label: 'Price & Value', icon: DollarSign},
@@ -579,6 +682,20 @@
                             {/* SECTION 2.5: SPECIALTY PERSONA — deep dive on the segment that drives the strategy */}
                             {activeTab === 'persona' && (
                                 <div className="space-y-16 animate-fade-in">
+                                    {/* Segment toggle */}
+                                    <div className="flex flex-wrap gap-3">
+                                        {['Specialty Enthusiasts', 'Casual Drinkers', 'Engaged Mainstream', 'Convenience Regulars', 'Non Category'].map((seg) => (
+                                            <button
+                                                key={seg}
+                                                onClick={() => setPersonaSegment(seg)}
+                                                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${personaSegment === seg ? 'bg-prblue text-white border-prblue' : 'bg-white text-charcoal border-gray-200 hover:border-prblue'}`}
+                                            >
+                                                {seg}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {personaSegment === 'Specialty Enthusiasts' && (<>
                                     {/* Hero */}
                                     <div className="bg-prblue text-white p-16 rounded-sm shadow-2xl relative overflow-hidden">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative z-10">
@@ -586,7 +703,7 @@
                                                 <h2 className="text-[7rem] font-black uppercase italic tracking-tighter leading-[0.85] mb-8">
                                                     The <span className="text-gold">Specialty</span> Enthusiast.
                                                 </h2>
-                                                <p className="text-2xl font-bold leading-relaxed opacity-90">27% of customers. 32% of revenue. The single segment with positive cafe spend intent in 2026 and the engine of every growth assumption in this report.</p>
+                                                <p className="text-2xl font-bold leading-relaxed opacity-90">27% of customers. 40% of revenue. The single segment with positive cafe spend intent in 2026 and the engine of every growth assumption in this report.</p>
                                             </div>
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
@@ -596,8 +713,8 @@
                                                 </div>
                                                 <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
                                                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Revenue share</span>
-                                                    <span className="text-5xl font-black text-gold">32%</span>
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-gold opacity-80 block mt-3">↑ 5pp vs 2025</span>
+                                                    <span className="text-5xl font-black text-gold">40%</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-gold opacity-80 block mt-3">↑ 6pp vs 2025</span>
                                                 </div>
                                                 <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
                                                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Visits / week</span>
@@ -716,7 +833,7 @@
                                                     <div className="text-5xl font-black text-charcoal tracking-tighter">$5.95</div>
                                                 </div>
                                                 <div className="border-t pt-8">
-                                                    <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-2">Premium headroom</span>
+                                                    <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-2">Above-market premium</span>
                                                     <div className="text-3xl font-black text-rust">+$0.65 / cup</div>
                                                 </div>
                                             </div>
@@ -741,7 +858,7 @@
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
                                             <div className="border-l-[6px] border-gold pl-8">
                                                 <h4 className="font-black uppercase text-xs tracking-widest opacity-60 mb-4">Revenue concentration</h4>
-                                                <p className="text-lg font-bold leading-relaxed">27% of customers drive 32% of revenue. Acquiring one Specialty Enthusiast is worth ~1.5 Convenience Regulars.</p>
+                                                <p className="text-lg font-bold leading-relaxed">27% of customers drive 40% of revenue — a 1.5× over-index. Disproportionate value is the strongest argument in the deck.</p>
                                             </div>
                                             <div className="border-l-[6px] border-gold pl-8">
                                                 <h4 className="font-black uppercase text-xs tracking-widest opacity-60 mb-4">Premium tolerance</h4>
@@ -753,6 +870,101 @@
                                             </div>
                                         </div>
                                     </div>
+                                    </>)}
+
+                                    {personaSegment !== 'Specialty Enthusiasts' && (() => {
+                                        const p = otherPersonas[personaSegment];
+                                        if (!p) return null;
+                                        const fmtDelta = (d, unit = 'pp') => {
+                                            if (d === 0) return `– no change vs 2025`;
+                                            const arrow = d > 0 ? '↑' : '↓';
+                                            const val = unit === '$' ? `$${Math.abs(d).toFixed(2)}` : `${Math.abs(d)}${unit}`;
+                                            return `${arrow} ${val} vs 2025`;
+                                        };
+                                        return (
+                                            <>
+                                                {/* Slim hero */}
+                                                <div className="bg-prblue text-white p-16 rounded-sm shadow-2xl relative overflow-hidden">
+                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative z-10">
+                                                        <div>
+                                                            <h2 className="text-[6rem] font-black uppercase italic tracking-tighter leading-[0.85] mb-8">{p.tagline}</h2>
+                                                            <p className="text-2xl font-bold leading-relaxed opacity-90">{p.description}</p>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-6">
+                                                            <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Customer share</span>
+                                                                <span className="text-5xl font-black text-gold">{p.customerShare}%</span>
+                                                                <span className="text-[10px] font-black uppercase tracking-widest opacity-80 block mt-3">{fmtDelta(p.customerDelta)}</span>
+                                                            </div>
+                                                            <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Revenue share</span>
+                                                                <span className="text-5xl font-black text-gold">{p.revenueShare}%</span>
+                                                                <span className="text-[10px] font-black uppercase tracking-widest opacity-80 block mt-3">{fmtDelta(p.revenueDelta)}</span>
+                                                            </div>
+                                                            <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Visits / week</span>
+                                                                <span className="text-5xl font-black text-gold">{p.visits}</span>
+                                                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mt-3">{p.visitsDelta > 0 ? '↑' : p.visitsDelta < 0 ? '↓' : '–'} {Math.abs(p.visitsDelta).toFixed(1)} vs 2025</span>
+                                                            </div>
+                                                            <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Spend / visit</span>
+                                                                <span className="text-5xl font-black text-gold">{p.spend > 0 ? `$${p.spend.toFixed(2)}` : 'n/a'}</span>
+                                                                {p.spend > 0 && <span className="text-[10px] font-black uppercase tracking-widest opacity-80 block mt-3">{fmtDelta(p.spendDelta, '$')}</span>}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="absolute -bottom-32 -right-32 opacity-5"><Coffee size={500} strokeWidth={1} /></div>
+                                                </div>
+
+                                                {/* Age + Discovery */}
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                                    <Card title="Age Distribution" subtitle={`${personaSegment} skew`}>
+                                                        <div className="chart-container" style={{height: '280px'}}>
+                                                            <ResponsiveContainer>
+                                                                <BarChart data={p.age}>
+                                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                                    <XAxis dataKey="range" tick={{fontSize: 11, fontWeight: 'bold'}} />
+                                                                    <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
+                                                                    <Tooltip cursor={{fill: '#FDF9F3', opacity: 0.4}} formatter={(v) => [`${v}%`, 'Share']} />
+                                                                    <Bar dataKey="share" fill={PR_COLORS.blue} radius={[4, 4, 0, 0]}>
+                                                                        <LabelList dataKey="share" position="top" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                                    </Bar>
+                                                                </BarChart>
+                                                            </ResponsiveContainer>
+                                                        </div>
+                                                    </Card>
+
+                                                    <Card title="Discovery Channels" subtitle={`How ${personaSegment} find new coffee`}>
+                                                        <div className="chart-container" style={{height: '280px'}}>
+                                                            <ResponsiveContainer>
+                                                                <BarChart data={p.discovery} layout="vertical" margin={{right: 40, left: 20}}>
+                                                                    <XAxis type="number" hide domain={[0, 60]} />
+                                                                    <YAxis dataKey="name" type="category" width={130} tick={{fontSize: 11, fontWeight: '900', fill: '#1C355E'}} axisLine={false} tickLine={false} />
+                                                                    <Tooltip cursor={{fill: '#FDF9F3', opacity: 0.4}} formatter={(v) => [`${v}%`, 'Share']} />
+                                                                    <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 4, 4, 0]} barSize={22}>
+                                                                        <LabelList dataKey="value" position="right" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                                    </Bar>
+                                                                </BarChart>
+                                                            </ResponsiveContainer>
+                                                        </div>
+                                                    </Card>
+                                                </div>
+
+                                                {/* So-what callout */}
+                                                <div className="bg-prblue text-white p-16 rounded-sm shadow-2xl relative overflow-hidden">
+                                                    <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-12">Why {personaSegment} matters.</h3>
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
+                                                        {p.soWhat.map((item, i) => (
+                                                            <div key={i} className="border-l-[6px] border-gold pl-8">
+                                                                <h4 className="font-black uppercase text-xs tracking-widest opacity-60 mb-4">{item.title}</h4>
+                                                                <p className="text-lg font-bold leading-relaxed">{item.text}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             )}
 
@@ -844,7 +1056,34 @@
                                                 </ScatterChart>
                                             </ResponsiveContainer>
                                         </div>
-                                        <p className="text-base font-bold italic mt-6 text-charcoal text-center border-t pt-6 max-w-3xl mx-auto">Every segment moved up and to the left between waves. Frequency is collapsing. Spend per visit is rising. Specialty Enthusiasts gained five points of revenue share while visiting less often — the structural inflection in one chart.</p>
+                                        <p className="text-base font-bold italic mt-6 text-charcoal text-center border-t pt-6 max-w-3xl mx-auto">Every segment moved up and to the left between waves. Frequency is collapsing. Spend per visit is rising. Specialty Enthusiasts gained six points of revenue share while visiting less often — the structural inflection in one chart.</p>
+                                    </Card>
+
+                                    <Card title="State Comparison" subtitle="Headline metrics by state — ABS-weighted from N:750">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 py-4">
+                                            {stateData.map(s => (
+                                                <div key={s.state} className="border-l-[6px] border-prblue pl-6 space-y-6">
+                                                    <h4 className="text-3xl font-black uppercase tracking-tighter">{s.state}</h4>
+                                                    <div>
+                                                        <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-1">Cafe spend trajectory</span>
+                                                        <span className="text-2xl font-black text-rust">{s.cafeSpend}%</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-1">Specialty share</span>
+                                                        <span className="text-2xl font-black text-prblue">{s.specialtyShare}%</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-1">Optimal cup price</span>
+                                                        <span className="text-2xl font-black text-charcoal">${s.optimalPrice.toFixed(2)}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-1">Home equipment</span>
+                                                        <span className="text-2xl font-black text-charcoal">{s.homeEquip}%</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <p className="text-base font-bold italic mt-6 text-charcoal text-center border-t pt-6 max-w-3xl mx-auto">VIC and NSW lead specialty engagement and tolerate the highest cup prices. QLD and WA over-index on price sensitivity and under-index on home equipment ownership — a different growth playbook applies.</p>
                                     </Card>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -1100,7 +1339,7 @@
                                             <div className="border-t border-gray-100 pt-8">
                                                 <span className="text-[10px] uppercase font-black opacity-40 block tracking-widest mb-2">Spread vs Convenience</span>
                                                 <div className="text-3xl font-black text-charcoal">+${(segmentBenchmarks['Specialty Enthusiasts'].optimal - segmentBenchmarks['Convenience Regulars'].optimal).toFixed(2)}</div>
-                                                <span className="text-[10px] font-black uppercase opacity-60">Top to bottom segment headroom</span>
+                                                <span className="text-[10px] font-black uppercase opacity-60">Top-to-bottom price spread</span>
                                             </div>
                                         </Card>
                                     </div>
