@@ -91,7 +91,7 @@
                 BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
                 PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, LineChart, ScatterChart,
                 Scatter, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend,
-                ReferenceLine, LabelList
+                ReferenceLine, LabelList, Customized
             } = window.Recharts;
 
             const PlaceholderIcon = ({ size = 24, className = '', strokeWidth = 2 }) => (
@@ -357,6 +357,48 @@
                     { segment: 'Convenience Regulars', visits: 4.8, spend: 4.20, revenue: 12, year: '2026' }
                 ];
 
+                const specialtyPersona = {
+                    age: [
+                        { range: '18-24', share: 8 },
+                        { range: '25-34', share: 32 },
+                        { range: '35-44', share: 28 },
+                        { range: '45-54', share: 18 },
+                        { range: '55-64', share: 10 },
+                        { range: '65+', share: 4 }
+                    ],
+                    income: [
+                        { band: '<$60k', share: 12 },
+                        { band: '$60-100k', share: 22 },
+                        { band: '$100-150k', share: 32 },
+                        { band: '$150-200k', share: 22 },
+                        { band: '$200k+', share: 12 }
+                    ],
+                    location: [
+                        { type: 'Inner urban', share: 38 },
+                        { type: 'Inner suburban', share: 31 },
+                        { type: 'Outer suburban', share: 19 },
+                        { type: 'Regional', share: 12 }
+                    ],
+                    equipment: [
+                        { item: 'Espresso machine', share: 78 },
+                        { item: 'Grinder', share: 64 },
+                        { item: 'Pour over kit', share: 42 },
+                        { item: 'Subscription', share: 38 }
+                    ],
+                    discovery: [
+                        { name: 'Word of Mouth', value: 48 },
+                        { name: 'Instagram', value: 41 },
+                        { name: 'Specialty media', value: 32 },
+                        { name: 'TikTok', value: 28 },
+                        { name: 'Cafe staff', value: 24 }
+                    ],
+                    quotes: [
+                        { quote: "I'd rather have one perfect cup at home than three mediocre ones from a chain.", attribution: '34, Sydney' },
+                        { quote: "I research origins before buying. Roast date matters more than brand to me.", attribution: '29, Melbourne' },
+                        { quote: "I'll pay $7 for a great flat white. I won't pay $5 for a bad one.", attribution: '41, Brisbane' }
+                    ]
+                };
+
                 const addonsData = [
                     { item: 'Large Size', willingness: 96, price: '+$1.00' },
                     { item: 'Extra Shot', willingness: 87, price: '+$0.50' },
@@ -373,13 +415,65 @@
                     </div>
                 );
 
-                const Stat = ({ label, value, sub, color = '#2A2A2A', size = "text-7xl" }) => (
+                const Stat = ({ label, value, sub, delta, color = '#2A2A2A', size = "text-7xl" }) => (
                     <div className="flex flex-col">
                         <span className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-3">{label}</span>
                         <span className={`${size} font-black tracking-tighter leading-none`} style={{ color }}>{value}</span>
+                        {delta !== undefined && (
+                            <span className={`text-[11px] font-black uppercase tracking-widest mt-3 ${delta > 0 ? 'text-prblue' : delta < 0 ? 'text-rust' : 'text-gray-400'}`}>
+                                {delta > 0 ? '↑' : delta < 0 ? '↓' : '–'} {Math.abs(delta)}pp vs 2025
+                            </span>
+                        )}
                         {sub && <span className="text-[13px] mt-4 uppercase font-black text-charcoal tracking-tight">{sub}</span>}
                     </div>
                 );
+
+                // Custom SVG layer that draws trajectory arrows from each segment's 2025 position
+                // to its 2026 position on the Frequency × Spend scatter chart.
+                const TrajectoryArrows = ({ xAxisMap, yAxisMap }) => {
+                    if (!xAxisMap || !yAxisMap) return null;
+                    const xAxis = xAxisMap[Object.keys(xAxisMap)[0]];
+                    const yAxis = yAxisMap[Object.keys(yAxisMap)[0]];
+                    if (!xAxis || !yAxis || !xAxis.scale || !yAxis.scale) return null;
+
+                    const segs = ['Specialty Enthusiasts', 'Casual Drinkers', 'Engaged Mainstream', 'Convenience Regulars'];
+
+                    return (
+                        <g>
+                            <defs>
+                                <marker id="arrowhead-traj" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                                    <polygon points="0 0, 10 5, 0 10" fill="#1C355E" />
+                                </marker>
+                            </defs>
+                            {segs.map(segName => {
+                                const start = freqSpendMatrix.find(d => d.segment === segName && d.year === '2025');
+                                const end = freqSpendMatrix.find(d => d.segment === segName && d.year === '2026');
+                                if (!start || !end) return null;
+                                const x1 = xAxis.scale(start.visits);
+                                const y1 = yAxis.scale(start.spend);
+                                const x2 = xAxis.scale(end.visits);
+                                const y2 = yAxis.scale(end.spend);
+                                const dx = x2 - x1;
+                                const dy = y2 - y1;
+                                const length = Math.sqrt(dx * dx + dy * dy);
+                                if (length < 5) return null;
+                                // Pull the arrowhead back so it doesn't disappear under the destination bubble
+                                const shortenBy = 28;
+                                const ratio = Math.max(0, (length - shortenBy) / length);
+                                const x2Adj = x1 + dx * ratio;
+                                const y2Adj = y1 + dy * ratio;
+                                return (
+                                    <line
+                                        key={segName}
+                                        x1={x1} y1={y1} x2={x2Adj} y2={y2Adj}
+                                        stroke="#1C355E" strokeWidth={1.5} strokeDasharray="4 3"
+                                        markerEnd="url(#arrowhead-traj)" opacity={0.55}
+                                    />
+                                );
+                            })}
+                        </g>
+                    );
+                };
 
                 // Subtle Y-axis preset for charts where scale matters but should not dominate.
                 const subtleAxis = {
@@ -408,6 +502,7 @@
                                 {[
                                     {id: 'intro', label: 'Introduction', icon: Info},
                                     {id: 'audiences', label: 'Audience Profiles', icon: UserCheck},
+                                    {id: 'persona', label: 'Specialty Persona', icon: Star},
                                     {id: 'summary', label: 'Market Pulse', icon: TrendingUp},
                                     {id: 'deep', label: 'Deep Analytics', icon: BarChart3},
                                     {id: 'pricing', label: 'Price & Value', icon: DollarSign},
@@ -465,7 +560,7 @@
                                             </div>
                                         </Card>
                                         <Card title="The Growth Anchor" className="border-4 border-prblue p-12 flex flex-col justify-center text-center bg-white shadow-2xl">
-                                            <Stat label="Core Sample Target" value="27%" sub="Specialty Enthusiasts" color="#1C355E" size="text-9xl" />
+                                            <Stat label="Core Sample Target" value="27%" sub="Specialty Enthusiasts" delta={3} color="#1C355E" size="text-9xl" />
                                             <p className="text-xl mt-12 font-black uppercase tracking-tighter leading-tight text-prblue border-t border-gray-100 pt-8">The only segment showing NET positive spending intent for cafes in 2026.</p>
                                         </Card>
                                     </div>
@@ -477,6 +572,186 @@
                                                 <p className="text-sm leading-relaxed font-bold text-charcoal opacity-70 italic">{seg.desc}</p>
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SECTION 2.5: SPECIALTY PERSONA — deep dive on the segment that drives the strategy */}
+                            {activeTab === 'persona' && (
+                                <div className="space-y-16 animate-fade-in">
+                                    {/* Hero */}
+                                    <div className="bg-prblue text-white p-16 rounded-sm shadow-2xl relative overflow-hidden">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative z-10">
+                                            <div>
+                                                <h2 className="text-[7rem] font-black uppercase italic tracking-tighter leading-[0.85] mb-8">
+                                                    The <span className="text-gold">Specialty</span> Enthusiast.
+                                                </h2>
+                                                <p className="text-2xl font-bold leading-relaxed opacity-90">27% of customers. 32% of revenue. The single segment with positive cafe spend intent in 2026 and the engine of every growth assumption in this report.</p>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-6">
+                                                <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Customer share</span>
+                                                    <span className="text-5xl font-black text-gold">27%</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-gold opacity-80 block mt-3">↑ 3pp vs 2025</span>
+                                                </div>
+                                                <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Revenue share</span>
+                                                    <span className="text-5xl font-black text-gold">32%</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-gold opacity-80 block mt-3">↑ 5pp vs 2025</span>
+                                                </div>
+                                                <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Visits / week</span>
+                                                    <span className="text-5xl font-black text-gold">2.8</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mt-3">↓ 0.7 vs 2025</span>
+                                                </div>
+                                                <div className="bg-white/10 backdrop-blur p-8 rounded-sm border border-white/20">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-3">Spend / visit</span>
+                                                    <span className="text-5xl font-black text-gold">$8.50</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-gold opacity-80 block mt-3">↑ $1.30 vs 2025</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="absolute -bottom-32 -right-32 opacity-5"><Coffee size={500} strokeWidth={1} /></div>
+                                    </div>
+
+                                    {/* Demographics */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                        <Card title="Age Distribution" subtitle="Specialty Enthusiasts skew Millennial / Gen X">
+                                            <div className="chart-container" style={{height: '280px'}}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={specialtyPersona.age}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                        <XAxis dataKey="range" tick={{fontSize: 11, fontWeight: 'bold'}} />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
+                                                        <Tooltip cursor={{fill: '#FDF9F3', opacity: 0.4}} formatter={(v) => [`${v}%`, 'Share']} />
+                                                        <Bar dataKey="share" fill={PR_COLORS.blue} radius={[4, 4, 0, 0]}>
+                                                            <LabelList dataKey="share" position="top" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="mt-6 text-sm font-bold italic text-charcoal border-t pt-6">60% of the segment sits in the 25-44 band — prime household formation and disposable income years.</p>
+                                        </Card>
+
+                                        <Card title="Household Income" subtitle="Above-median earners over-indexed">
+                                            <div className="chart-container" style={{height: '280px'}}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={specialtyPersona.income}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                        <XAxis dataKey="band" tick={{fontSize: 10, fontWeight: 'bold'}} />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
+                                                        <Tooltip cursor={{fill: '#FDF9F3', opacity: 0.4}} formatter={(v) => [`${v}%`, 'Share']} />
+                                                        <Bar dataKey="share" fill={PR_COLORS.gold} radius={[4, 4, 0, 0]}>
+                                                            <LabelList dataKey="share" position="top" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="mt-6 text-sm font-bold italic text-charcoal border-t pt-6">66% earn above $100k household — well above the national median.</p>
+                                        </Card>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                        <Card title="Geographic Concentration" subtitle="Inner urban and suburban dominance">
+                                            <div className="space-y-6 py-6">
+                                                {specialtyPersona.location.map((loc, i) => (
+                                                    <div key={i}>
+                                                        <div className="flex justify-between mb-2">
+                                                            <span className="text-sm font-black uppercase tracking-widest text-charcoal">{loc.type}</span>
+                                                            <span className="text-sm font-black text-prblue">{loc.share}%</span>
+                                                        </div>
+                                                        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-prblue" style={{width: `${loc.share * 2.5}%`}}></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <p className="mt-6 text-sm font-bold italic text-charcoal border-t pt-6">69% live within 15km of a CBD but visit suburban cafes near home, not workplace.</p>
+                                        </Card>
+
+                                        <Card title="Home Equipment" subtitle="High investment in personal coffee setup">
+                                            <div className="space-y-6 py-6">
+                                                {specialtyPersona.equipment.map((eq, i) => (
+                                                    <div key={i}>
+                                                        <div className="flex justify-between mb-2">
+                                                            <span className="text-sm font-black uppercase tracking-widest text-charcoal">{eq.item}</span>
+                                                            <span className="text-sm font-black text-prblue">{eq.share}%</span>
+                                                        </div>
+                                                        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-gold" style={{width: `${eq.share}%`}}></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <p className="mt-6 text-sm font-bold italic text-charcoal border-t pt-6">78% own an espresso machine. 64% own a grinder. The home barista is structural now, not aspirational.</p>
+                                        </Card>
+                                    </div>
+
+                                    {/* Discovery + WTP */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                        <Card title="Discovery Channel Mix" subtitle="How Specialty Enthusiasts find new coffee">
+                                            <div className="chart-container" style={{height: '280px'}}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={specialtyPersona.discovery} layout="vertical" margin={{right: 40, left: 20}}>
+                                                        <XAxis type="number" hide domain={[0, 60]} />
+                                                        <YAxis dataKey="name" type="category" width={130} tick={{fontSize: 11, fontWeight: '900', fill: '#1C355E'}} axisLine={false} tickLine={false} />
+                                                        <Tooltip cursor={{fill: '#FDF9F3', opacity: 0.4}} formatter={(v) => [`${v}%`, 'Share']} />
+                                                        <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 4, 4, 0]} barSize={22}>
+                                                            <LabelList dataKey="value" position="right" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="mt-6 text-sm font-bold italic text-charcoal border-t pt-6">Word of mouth and Instagram lead. Specialty media and cafe staff over-index versus the general drinker.</p>
+                                        </Card>
+
+                                        <Card title="Willingness to Pay" subtitle="Price tolerance versus the overall market" className="border-4 border-prblue shadow-2xl">
+                                            <div className="space-y-10 py-8 text-center">
+                                                <div>
+                                                    <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-3">Optimal price (this segment)</span>
+                                                    <div className="text-7xl font-black text-prblue tracking-tighter">$6.60</div>
+                                                </div>
+                                                <div className="border-t pt-10">
+                                                    <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-3">Optimal price (all customers)</span>
+                                                    <div className="text-5xl font-black text-charcoal tracking-tighter">$5.95</div>
+                                                </div>
+                                                <div className="border-t pt-8">
+                                                    <span className="text-[10px] uppercase font-black tracking-widest opacity-60 block mb-2">Premium headroom</span>
+                                                    <div className="text-3xl font-black text-rust">+$0.65 / cup</div>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    </div>
+
+                                    {/* Quotes */}
+                                    <Card title="Voice of the Segment" subtitle="Selected open-text responses (Q31)">
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-6">
+                                            {specialtyPersona.quotes.map((q, i) => (
+                                                <div key={i} className="bg-cream p-8 border-l-[6px] border-gold">
+                                                    <p className="italic font-bold text-lg text-charcoal leading-relaxed">"{q.quote}"</p>
+                                                    <p className="text-[11px] font-black uppercase tracking-widest text-prblue mt-6">— {q.attribution}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </Card>
+
+                                    {/* Strategic implication */}
+                                    <div className="bg-prblue text-white p-16 rounded-sm shadow-2xl relative overflow-hidden">
+                                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-12">Why this segment matters.</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
+                                            <div className="border-l-[6px] border-gold pl-8">
+                                                <h4 className="font-black uppercase text-xs tracking-widest opacity-60 mb-4">Revenue concentration</h4>
+                                                <p className="text-lg font-bold leading-relaxed">27% of customers drive 32% of revenue. Acquiring one Specialty Enthusiast is worth ~1.5 Convenience Regulars.</p>
+                                            </div>
+                                            <div className="border-l-[6px] border-gold pl-8">
+                                                <h4 className="font-black uppercase text-xs tracking-widest opacity-60 mb-4">Premium tolerance</h4>
+                                                <p className="text-lg font-bold leading-relaxed">$6.60 optimal price is $0.65 above the market average. Quality communicated through specifics earns this premium.</p>
+                                            </div>
+                                            <div className="border-l-[6px] border-gold pl-8">
+                                                <h4 className="font-black uppercase text-xs tracking-widest opacity-60 mb-4">Channel split</h4>
+                                                <p className="text-lg font-bold leading-relaxed">78% own espresso machines. Retail bean and subscription growth has structural foundations, not promotional ones.</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -549,6 +824,7 @@
                                                         label={{value: '↑ Spend per visit', angle: -90, position: 'insideLeft', fontSize: 11, fontWeight: 900, fill: '#666'}}
                                                     />
                                                     <ZAxis type="number" dataKey="revenue" range={[400, 2500]} name="Revenue share" />
+                                                    <Customized component={TrajectoryArrows} />
                                                     <Tooltip
                                                         cursor={{strokeDasharray: '3 3'}}
                                                         formatter={(v, n) => {
@@ -572,8 +848,8 @@
                                     </Card>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                                        <Card title="Visitation Rituals"><div className="space-y-12 py-6"><Stat label="3. Cafe Near Home" value="46%" sub="The Primary Weekday Hub" color="#1C355E" /><Stat label="4. Workplace Cafe" value="33%" sub="Declining vs Hybrid Work" color="#2A2A2A" /></div></Card>
-                                        <Card title="Market Parity"><div className="space-y-12 py-6"><Stat label="5. Home Espresso" value="44%" sub="Usage at Parity with Cafes" color="#1C355E" /><Stat label="6. Pod Utilisation" value="31%" sub="The Convenience Baseline" color="#2A2A2A" /></div></Card>
+                                        <Card title="Visitation Rituals"><div className="space-y-12 py-6"><Stat label="3. Cafe Near Home" value="46%" sub="The Primary Weekday Hub" delta={-18} color="#1C355E" /><Stat label="4. Workplace Cafe" value="33%" sub="Declining vs Hybrid Work" delta={-10} color="#2A2A2A" /></div></Card>
+                                        <Card title="Market Parity"><div className="space-y-12 py-6"><Stat label="5. Home Espresso" value="44%" sub="Usage at Parity with Cafes" delta={8} color="#1C355E" /><Stat label="6. Pod Utilisation" value="31%" sub="The Convenience Baseline" delta={2} color="#2A2A2A" /></div></Card>
                                         <div className="bg-prblue p-12 text-white flex flex-col justify-center rounded-sm shadow-2xl relative overflow-hidden">
                                             <Zap className="mb-8 text-gold relative z-10" size={56} />
                                             <h4 className="text-xs font-black uppercase tracking-widest mb-6 italic opacity-70 relative z-10">Switching Behaviour</h4>
@@ -859,8 +1135,8 @@
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 animate-fade-in">
                                     <Card title="Generational Ritual" subtitle="Hot vs Cold Temperature shift (Q6)">
                                         <div className="space-y-16 py-8">
-                                            <Stat label="Gen Z Preference" value="62% Cold" color="#1C355E" sub="Discovery is cold:brewed" />
-                                            <Stat label="Boomer Preference" value="89% Hot" color="#2A2A2A" sub="Traditional coffee ritual" />
+                                            <Stat label="Gen Z Preference" value="62% Cold" delta={8} color="#1C355E" sub="Discovery is cold:brewed" />
+                                            <Stat label="Boomer Preference" value="89% Hot" delta={-2} color="#2A2A2A" sub="Traditional coffee ritual" />
                                         </div>
                                     </Card>
                                     <Card title="Discovery Channels" subtitle={`Channel preference — ${discoveryAge}`}>
@@ -883,7 +1159,10 @@
                                                     <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 4, 4, 0]} barSize={24}>
                                                         <LabelList dataKey="value" position="right" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
                                                     </Bar>
-                                                    <Tooltip formatter={(v) => `${v}%`} />
+                                                    <Tooltip
+                                                        cursor={{fill: '#FDF9F3', opacity: 0.4}}
+                                                        formatter={(v) => [`${v}%`, 'Share']}
+                                                    />
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </div>
