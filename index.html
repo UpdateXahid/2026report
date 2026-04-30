@@ -4,178 +4,706 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 Cafe and Coffee Insights Report | Pablo & Rusty's</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind to recognise custom brand colours used throughout the report.
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: '#2A2A2A',
+                        cream: '#FDF9F3',
+                        prblue: '#1C355E',
+                        rust: '#B94723',
+                        gold: '#C5A059'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- Order matters: React, then ReactDOM, then PropTypes (required by Recharts), then Recharts, then lucide-react, then Babel last. -->
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.383.0/dist/umd/lucide-react.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
-        body { font-family: 'Roboto', sans-serif; background-color: #FDF9F3; margin: 0; color: #2A2A2A; }
-        .chart-container { height: 350px; width: 100%; margin: 20px 0; }
-        .loader { padding: 40px; font-family: sans-serif; color: #666; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #FDF9F3;
+            color: #2A2A2A;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .chart-container { height: 350px; width: 100%; margin-top: 24px; }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="root"><div class="loader">Loading…</div></div>
+    <div id="root">
+        <div class="flex items-center justify-center h-screen bg-cream">
+            <div class="text-center">
+                <div class="w-16 h-16 border-4 border-prblue border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                <p class="text-[12px] font-black uppercase tracking-[0.4em] text-prblue">Compiling Full 2026 Dataset...</p>
+            </div>
+        </div>
+    </div>
 
-    <script>
-    // Sequential loader — guarantees order regardless of CDN behaviour.
-    (function () {
-        const scripts = [
-            'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
-            'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js',
-            'https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js',
-            'https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js'
-        ];
+    <script type="text/babel">
+        // Poll until every required global is on window, then boot.
+        // Caps at ~6 seconds then surfaces a real error instead of spinning forever.
+        let attempts = 0;
+        const MAX_ATTEMPTS = 60;
 
-        function loadNext(i) {
-            if (i >= scripts.length) return boot();
-            const s = document.createElement('script');
-            s.src = scripts[i];
-            s.crossOrigin = 'anonymous';
-            s.onload = function () { loadNext(i + 1); };
-            s.onerror = function () {
-                document.getElementById('root').innerHTML =
-                    '<div class="loader">Failed to load: ' + scripts[i] + '</div>';
-            };
-            document.head.appendChild(s);
-        }
+        const startApplication = () => {
+            const LucideLib = window.lucideReact || window.LucideReact;
+            const ready =
+                window.React &&
+                window.ReactDOM &&
+                window.PropTypes &&
+                window.Recharts &&
+                LucideLib;
 
-        function boot() {
-            const missing = [];
-            if (!window.React) missing.push('React');
-            if (!window.ReactDOM) missing.push('ReactDOM');
-            if (!window.PropTypes) missing.push('PropTypes');
-            if (!window.Recharts) missing.push('Recharts');
-            if (missing.length) {
-                document.getElementById('root').innerHTML =
-                    '<div class="loader">Missing globals: ' + missing.join(', ') + '</div>';
+            if (!ready) {
+                attempts += 1;
+                if (attempts > MAX_ATTEMPTS) {
+                    const missing = [];
+                    if (!window.React) missing.push('React');
+                    if (!window.ReactDOM) missing.push('ReactDOM');
+                    if (!window.PropTypes) missing.push('PropTypes');
+                    if (!window.Recharts) missing.push('Recharts');
+                    if (!LucideLib) missing.push('lucide-react');
+                    document.getElementById('root').innerHTML =
+                        '<div style="padding:60px;font-family:sans-serif;">' +
+                        '<h2 style="font-weight:900;text-transform:uppercase;color:#1C355E;">Failed to initialise</h2>' +
+                        '<p>Missing globals: ' + missing.join(', ') + '</p>' +
+                        '<p style="color:#666;">Check your network or CDN access.</p>' +
+                        '</div>';
+                    return;
+                }
+                setTimeout(startApplication, 100);
                 return;
             }
 
-            const React = window.React;
-            const ReactDOM = window.ReactDOM;
-            const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area } = window.Recharts;
+            const {
+                BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+                PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, ScatterChart,
+                Scatter, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend
+            } = window.Recharts;
+
+            // Defensive icon resolution: if a name is missing, fall back to a neutral circle so the page never crashes.
+            const PlaceholderIcon = ({ size = 24, className = '', strokeWidth = 2 }) => (
+                <svg width={size} height={size} className={className} viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" strokeWidth={strokeWidth}>
+                    <circle cx="12" cy="12" r="10" />
+                </svg>
+            );
+            const ic = (name) => (LucideLib && LucideLib[name]) || PlaceholderIcon;
+
+            const TrendingUp  = ic('TrendingUp');
+            const Home        = ic('Home');
+            const Coffee      = ic('Coffee');
+            const Users       = ic('Users');
+            const Search      = ic('Search');
+            const DollarSign  = ic('DollarSign');
+            const MapPin      = ic('MapPin');
+            const Smartphone  = ic('Smartphone');
+            const ShoppingBag = ic('ShoppingBag');
+            const Info        = ic('Info');
+            const ArrowRight  = ic('ArrowRight');
+            const ShieldCheck = ic('ShieldCheck');
+            const Zap         = ic('Zap');
+            const Star        = ic('Star');
+            const UserCheck   = ic('UserCheck');
+            const BarChart3   = ic('BarChart3');
+
+            // Brand Standards
+            const PR_COLORS = {
+                charcoal: '#2A2A2A',
+                deepCharcoal: '#1A1A1A',
+                cream: '#FDF9F3',
+                gold: '#C5A059',
+                rust: '#B94723',
+                blue: '#1C355E',
+                gray: '#757575',
+                lightGray: '#E5E5E5'
+            };
 
             const App = () => {
-                const [tab, setTab] = React.useState('intro');
+                const [activeTab, setActiveTab] = React.useState('intro');
 
-                const segments = [
-                    { name: 'Specialty Enthusiasts', value: 27 },
-                    { name: 'Casual Drinkers', value: 24 },
-                    { name: 'Engaged Mainstream', value: 20 },
-                    { name: 'Non Category', value: 16 },
-                    { name: 'Convenience Regulars', value: 14 }
+                // --- 1. CORE SEGMENT DATA ---
+                const segmentData = [
+                    { name: 'Specialty Enthusiasts', value: 27, desc: 'The category engine. Quality obsessed and showing the highest positive spending intent.' },
+                    { name: 'Casual Drinkers', value: 24, desc: 'Socially motivated. View the cafe as a key third space for connection.' },
+                    { name: 'Engaged Mainstream', value: 20, desc: 'Balanced regulars. Flavour focused but increasingly price sensitive in 2026.' },
+                    { name: 'Non Category', value: 16, desc: 'Low engagement. Infrequent drinkers or participants who favour non-coffee beverages.' },
+                    { name: 'Convenience Regulars', value: 14, desc: 'Routine driven. Favour pods, RTD, and speed of delivery over origin stories.' }
                 ];
 
-                const pricing = [
-                    { p: 4.0, v: 90 }, { p: 5.0, v: 50 }, { p: 6.0, v: 10 }
+                // --- 2. MARKET PULSE DATA ---
+                const scissorData = [
+                    { name: 'Cafe Spend', direction: -13, fill: PR_COLORS.rust },
+                    { name: 'Home Spend', direction: 28, fill: PR_COLORS.blue }
                 ];
 
-                const Nav = () => React.createElement('nav', { className: 'flex overflow-x-auto border-b bg-white sticky top-0 z-50 px-6' },
-                    ['intro', 'audiences', 'pricing', 'summary'].map(t =>
-                        React.createElement('button', {
-                            key: t,
-                            onClick: () => setTab(t),
-                            className: 'px-6 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all ' +
-                                (tab === t ? 'border-[#1C355E] text-[#1C355E]' : 'border-transparent text-gray-400')
-                        }, t)
-                    )
+                // --- 3. DEEP ANALYTICS DATA (10 SETS) ---
+                const generationalShift = [
+                    { age: '18 to 24', hot: 38, cold: 62 },
+                    { age: '25 to 34', hot: 52, cold: 48 },
+                    { age: '35 to 44', hot: 65, cold: 35 },
+                    { age: '45 to 54', hot: 78, cold: 22 },
+                    { age: '55 plus', hot: 89, cold: 11 }
+                ];
+
+                const anchorEffect = [
+                    { price: 4.0, before: 80, after: 95 },
+                    { price: 5.0, before: 40, after: 75 },
+                    { price: 6.0, before: 5, after: 45 },
+                    { price: 7.0, before: 0, after: 15 }
+                ];
+
+                const suburbanMigration = [
+                    { location: 'Near Home', wave2025: 64, wave2026: 46 },
+                    { location: 'Workplace', wave2025: 43, wave2026: 33 },
+                    { location: 'CBD Centre', wave2025: 28, wave2026: 18 }
+                ];
+
+                const equipmentRadar = [
+                    { subject: 'Espresso', A: 90, B: 20 },
+                    { subject: 'Pods', A: 15, B: 85 },
+                    { subject: 'Filter', A: 45, B: 5 },
+                    { subject: 'Manual', A: 60, B: 2 },
+                    { subject: 'Instant', A: 5, B: 70 }
+                ];
+
+                const milkTolerance = [
+                    { segment: 'Specialty', pay: 85 },
+                    { segment: 'Mainstream', pay: 72 },
+                    { segment: 'Casual', pay: 60 },
+                    { segment: 'Convenience', pay: 45 }
+                ];
+
+                const indulgenceIndex = [
+                    { age: '18 to 24', interest: 92 },
+                    { age: '25 to 34', interest: 85 },
+                    { age: '35 to 44', interest: 70 },
+                    { age: '45 to 54', interest: 45 },
+                    { age: '55 plus', interest: 20 }
+                ];
+
+                const pressureData = [
+                    { status: 'Comfortable', trajectory: 15 },
+                    { status: 'Manageable', trajectory: -8 },
+                    { status: 'Under Pressure', trajectory: -24 },
+                    { status: 'Signif. Pressure', trajectory: -42 }
+                ];
+
+                const brandConversion = [
+                    { awareness: 85, trial: 55, name: 'Mainstream' },
+                    { awareness: 45, trial: 30, name: 'Specialty' },
+                    { awareness: 25, trial: 22, name: 'Artisan' },
+                    { awareness: 10, trial: 8, name: 'Niche' }
+                ];
+
+                const subGrowth = [
+                    { period: '2025 Wave', value: 16 },
+                    { period: '2026 Wave', value: 24 }
+                ];
+
+                const driverMatrix = [
+                    { x: 90, y: 30, name: 'Taste Priority' },
+                    { x: 70, y: 65, name: 'Balanced' },
+                    { x: 40, y: 95, name: 'Price Priority' }
+                ];
+
+                // --- 4. PRICING & RITUALS ---
+                const priceSensitivity = [
+                    { price: 4.0, bargain: 90, expensive: 5, quality: 60 },
+                    { price: 4.5, bargain: 75, expensive: 15, quality: 40 },
+                    { price: 5.0, bargain: 50, expensive: 40, quality: 15 },
+                    { price: 5.5, bargain: 25, expensive: 65, quality: 5 },
+                    { price: 6.0, bargain: 10, expensive: 85, quality: 2 }
+                ];
+
+                const drinkTrends = [
+                    { name: 'Biscoff Latte', interest: 84 },
+                    { name: 'Tiramisu Latte', interest: 78 },
+                    { name: 'Pistachio Latte', interest: 65 },
+                    { name: 'Espresso Tonic', interest: 42 }
+                ];
+
+                const discoveryData = [
+                    { name: 'Word of Mouth', value: 42 },
+                    { name: 'Facebook', value: 27 },
+                    { name: 'Instagram', value: 24 },
+                    { name: 'TikTok', value: 18 }
+                ];
+
+                const addonsData = [
+                    { item: 'Large Size', willingness: 96, price: '+$1.00' },
+                    { item: 'Extra Shot', willingness: 87, price: '+$0.50' },
+                    { item: 'Iced Version', willingness: 73, price: '+$1.00' },
+                    { item: 'Alt Milk', willingness: 68, price: '+$0.50' }
+                ];
+
+                // --- UI COMPONENTS ---
+                const Card = ({ title, subtitle, children, className = "" }) => (
+                    <div className={`bg-white p-10 border border-gray-200 rounded-sm shadow-sm transition-all hover:shadow-xl ${className}`}>
+                        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-charcoal mb-1">{title}</h3>
+                        {subtitle && <p className="text-[11px] uppercase text-gray-400 font-bold mb-8 tracking-widest italic">{subtitle}</p>}
+                        {children}
+                    </div>
                 );
 
-                const Header = () => React.createElement('header', { className: 'bg-white px-10 py-8 flex justify-between items-center border-b' },
-                    React.createElement('div', { className: 'flex items-center gap-4' },
-                        React.createElement('div', { className: 'w-10 h-10 bg-[#1C355E] flex items-center justify-center text-white rounded font-black' }, 'PR'),
-                        React.createElement('h1', { className: 'text-2xl font-black uppercase italic' }, "Pablo & Rusty's")
-                    ),
-                    React.createElement('div', { className: 'text-[10px] font-black uppercase opacity-40' }, '2026 Insights Report')
+                const Stat = ({ label, value, sub, color = '#2A2A2A', size = "text-7xl" }) => (
+                    <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-3">{label}</span>
+                        <span className={`${size} font-black tracking-tighter leading-none`} style={{ color }}>{value}</span>
+                        {sub && <span className="text-[13px] mt-4 uppercase font-black text-charcoal tracking-tight">{sub}</span>}
+                    </div>
                 );
 
-                const Intro = () => React.createElement('div', { className: 'max-w-4xl space-y-8 py-10' },
-                    React.createElement('h2', { className: 'text-7xl font-black uppercase tracking-tighter leading-none' },
-                        'The Structural ', React.createElement('span', { className: 'text-[#1C355E] italic' }, 'Inflection.')
-                    ),
-                    React.createElement('p', { className: 'text-xl leading-relaxed' }, 'A definitive 2026 study on Australian coffee landscape shifting from volume to indulgence.'),
-                    React.createElement('div', { className: 'bg-white p-10 border-l-[16px] border-[#1C355E] shadow-xl text-3xl font-black italic' },
-                        '"Consumers are trading frequency for intensity."'
-                    )
-                );
+                return (
+                    <div className="min-h-screen bg-cream">
+                        {/* HEADER */}
+                        <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+                            <div className="max-w-7xl mx-auto px-10 py-10 flex justify-between items-end">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-prblue flex items-center justify-center rounded-sm text-white"><Coffee size={32}/></div>
+                                    <div>
+                                        <h1 className="text-4xl font-black uppercase italic leading-none tracking-tighter">Pablo & Rusty's</h1>
+                                        <p className="text-[12px] tracking-[0.4em] uppercase text-prblue font-black mt-3">2026 Cafe and Coffee Insights Report</p>
+                                    </div>
+                                </div>
+                                <div className="hidden md:block text-[11px] font-black uppercase tracking-widest opacity-40 border-l border-gray-200 pl-10 text-right">
+                                    Survey Sample: N:750 <br/> Cycle: Q1 2026 Wave
+                                </div>
+                            </div>
+                            <nav className="max-w-7xl mx-auto px-10 flex overflow-x-auto no-scrollbar border-t border-gray-100 bg-white">
+                                {[
+                                    {id: 'intro', label: 'Introduction', icon: Info},
+                                    {id: 'audiences', label: 'Audience Profiles', icon: UserCheck},
+                                    {id: 'summary', label: 'Market Pulse', icon: TrendingUp},
+                                    {id: 'deep', label: 'Deep Analytics', icon: BarChart3},
+                                    {id: 'pricing', label: 'Price & Value', icon: DollarSign},
+                                    {id: 'rituals', label: 'Rituals', icon: Search},
+                                    {id: 'final', label: 'Verdict', icon: ShieldCheck}
+                                ].map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex items-center gap-3 px-8 py-6 border-b-4 transition-all shrink-0 ${activeTab === tab.id ? 'border-prblue text-prblue' : 'border-transparent text-gray-400 hover:text-charcoal'}`}
+                                    >
+                                        <tab.icon size={18} /><span className="text-[11px] uppercase tracking-widest leading-none font-black">{tab.label}</span>
+                                    </button>
+                                ))}
+                            </nav>
+                        </header>
 
-                const Audiences = () => React.createElement('div', { className: 'space-y-10 py-10' },
-                    React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-3 gap-8' },
-                        React.createElement('div', { className: 'lg:col-span-2 bg-white p-8 border' },
-                            React.createElement('h3', { className: 'font-black uppercase text-sm mb-6' }, 'Audience Breakdown'),
-                            React.createElement('div', { className: 'chart-container' },
-                                React.createElement(ResponsiveContainer, null,
-                                    React.createElement(BarChart, { data: segments, layout: 'vertical', margin: { left: 40 } },
-                                        React.createElement(XAxis, { type: 'number', hide: true }),
-                                        React.createElement(YAxis, { dataKey: 'name', type: 'category', width: 150, tick: { fontSize: 11, fontWeight: 900 } }),
-                                        React.createElement(Tooltip, null),
-                                        React.createElement(Bar, { dataKey: 'value', radius: [0, 4, 4, 0] },
-                                            segments.map((e, i) => React.createElement(Cell, { key: i, fill: i === 0 ? '#1C355E' : '#2A2A2A' }))
-                                        )
-                                    )
-                                )
-                            )
-                        ),
-                        React.createElement('div', { className: 'bg-white border-4 border-[#1C355E] p-10 flex flex-col justify-center text-center' },
-                            React.createElement('span', { className: 'text-[10px] font-black uppercase opacity-40' }, 'Growth Engine'),
-                            React.createElement('span', { className: 'text-7xl font-black text-[#1C355E]' }, '27%'),
-                            React.createElement('span', { className: 'text-xs font-black uppercase mt-4' }, 'Specialty Enthusiasts')
-                        )
-                    )
-                );
+                        <main className="max-w-7xl mx-auto px-10 py-20">
 
-                const Pricing = () => React.createElement('div', { className: 'py-10 grid grid-cols-1 lg:grid-cols-2 gap-8' },
-                    React.createElement('div', { className: 'bg-white p-8 border' },
-                        React.createElement('h3', { className: 'font-black uppercase text-sm mb-6' }, 'Price Sensitivity Meter'),
-                        React.createElement('div', { className: 'chart-container' },
-                            React.createElement(ResponsiveContainer, null,
-                                React.createElement(AreaChart, { data: pricing },
-                                    React.createElement(XAxis, { dataKey: 'p' }),
-                                    React.createElement(Tooltip, null),
-                                    React.createElement(Area, { type: 'monotone', dataKey: 'v', stroke: '#1C355E', fill: '#1C355E', fillOpacity: 0.3 })
-                                )
-                            )
-                        )
-                    ),
-                    React.createElement('div', { className: 'bg-white border p-10 space-y-10 flex flex-col justify-center' },
-                        React.createElement('div', null,
-                            React.createElement('div', { className: 'text-[10px] font-black uppercase opacity-40' }, 'Indifference Point'),
-                            React.createElement('div', { className: 'text-5xl font-black text-[#1C355E]' }, '$5.90')
-                        ),
-                        React.createElement('div', { className: 'border-t pt-10' },
-                            React.createElement('div', { className: 'text-[10px] font-black uppercase opacity-40' }, 'Optimal Price Point'),
-                            React.createElement('div', { className: 'text-7xl font-black text-[#2A2A2A]' }, '$5.95')
-                        )
-                    )
-                );
+                            {/* SECTION 1: INTRODUCTION */}
+                            {activeTab === 'intro' && (
+                                <div className="animate-fade-in max-w-5xl space-y-16">
+                                    <h2 className="text-[10rem] font-black uppercase tracking-tighter leading-[0.85] text-charcoal">The Structural <br/> <span className="text-prblue italic underline decoration-[16px] underline-offset-[20px]">Inflection.</span></h2>
+                                    <p className="text-3xl leading-relaxed font-medium text-charcoal max-w-4xl">This wave analyses the critical shift in the Australian coffee landscape between 2025 and 2026, decoding the impact of hybrid work, inflation, and Gen Z ritual dominance.</p>
+                                    <div className="bg-white p-20 border-l-[24px] border-prblue shadow-2xl relative">
+                                        <p className="italic font-black text-5xl text-charcoal leading-tight tracking-tighter">"We are moving from a growth by volume market to a growth by indulgence market. Consumers are trading frequency for intensity, demanding much higher specialty value when they do visit a venue."</p>
+                                        <div className="absolute top-4 right-12 text-prblue opacity-5 italic font-serif text-[15rem] leading-none select-none">"</div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10">
+                                        <div className="p-12 bg-prblue text-white rounded-sm shadow-xl hover:scale-[1.02] transition-transform"><h4 className="font-black uppercase tracking-widest text-xs opacity-60 mb-6 border-b border-white/20 pb-4">Research Objective</h4><p className="text-2xl font-black">Identify the 'Specialty Enthusiast' profile and map the structural shift from Cafe:led to Home:led rituals.</p></div>
+                                        <div className="p-12 bg-white border border-gray-200 rounded-sm hover:scale-[1.02] transition-transform"><h4 className="font-black uppercase tracking-widest text-xs opacity-60 mb-6 border-b border-gray-100 pb-4 text-charcoal">Statistical Weighting</h4><p className="text-2xl font-black text-charcoal">Analysed against ABS 2025 marginals (State x Age x Gender) to ensure true representation of the 750 respondents.</p></div>
+                                    </div>
+                                    <button onClick={() => setActiveTab('audiences')} className="bg-prblue text-white px-16 py-8 text-lg font-black uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center gap-8 shadow-2xl">Enter Audience Analysis <ArrowRight size={28} /></button>
+                                </div>
+                            )}
 
-                const Summary = () => React.createElement('div', { className: 'py-20 bg-[#1C355E] text-white p-10 rounded shadow-2xl mt-10' },
-                    React.createElement('h2', { className: 'text-6xl font-black italic uppercase' }, 'Strategic Verdict.'),
-                    React.createElement('p', { className: 'text-2xl mt-6 font-bold leading-relaxed' },
-                        'The home ritual is now structural. Anchor local prices to global $8.50 benchmarks.'
-                    )
-                );
+                            {/* SECTION 2: AUDIENCE PROFILES */}
+                            {activeTab === 'audiences' && (
+                                <div className="space-y-20 animate-fade-in">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                        <Card title="Audience Breakdown" subtitle="Distribution across N:750 segment" className="lg:col-span-2">
+                                            <div className="chart-container">
+                                                <ResponsiveContainer>
+                                                    <BarChart data={segmentData} layout="vertical" margin={{ left: 100, right: 40 }}>
+                                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F0F0F0" />
+                                                        <XAxis type="number" hide />
+                                                        <YAxis dataKey="name" type="category" width={220} tick={{fontSize: 14, fontWeight: '900', fill: '#1C355E'}} axisLine={false} tickLine={false} />
+                                                        <Tooltip cursor={{fill: '#FDF9F3'}} formatter={(v) => [`${v}%`, 'Market Share']} />
+                                                        <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={50}>
+                                                            {segmentData.map((e, i) => (<Cell key={i} fill={i === 0 ? '#1C355E' : i === 4 ? '#B94723' : '#2A2A2A'} />))}
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                        <Card title="The Growth Anchor" className="border-4 border-prblue p-12 flex flex-col justify-center text-center bg-white shadow-2xl">
+                                            <Stat label="Core Sample Target" value="27%" sub="Specialty Enthusiasts" color="#1C355E" size="text-9xl" />
+                                            <p className="text-xl mt-12 font-black uppercase tracking-tighter leading-tight text-prblue border-t border-gray-100 pt-8">The only segment showing NET positive spending intent for cafes in 2026.</p>
+                                        </Card>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+                                        {segmentData.map((seg, i) => (
+                                            <div key={i} className="p-10 bg-white border border-gray-100 rounded-sm hover:border-prblue transition-all group shadow-sm">
+                                                <div className="text-5xl font-black text-prblue mb-4">{seg.value}%</div>
+                                                <h4 className="text-[12px] font-black uppercase mb-6 border-b pb-4 tracking-widest h-12 leading-tight">{seg.name}</h4>
+                                                <p className="text-sm leading-relaxed font-bold text-charcoal opacity-70 italic">{seg.desc}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
-                return React.createElement('div', { className: 'min-h-screen pb-20' },
-                    React.createElement(Header),
-                    React.createElement(Nav),
-                    React.createElement('main', { className: 'max-w-7xl mx-auto px-10' },
-                        tab === 'intro' && React.createElement(Intro),
-                        tab === 'audiences' && React.createElement(Audiences),
-                        tab === 'pricing' && React.createElement(Pricing),
-                        tab === 'summary' && React.createElement(Summary)
-                    ),
-                    React.createElement('footer', { className: 'max-w-7xl mx-auto px-10 py-10 border-t text-[10px] font-black uppercase tracking-widest opacity-30 mt-20' },
-                        '\u00A9 2026 Pablo and Rusty\u2019s Coffee Roasters'
-                    )
+                            {/* SECTION 3: MARKET PULSE */}
+                            {activeTab === 'summary' && (
+                                <div className="space-y-16 animate-fade-in">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                        <Card title="1. Cafe Spend Shift" subtitle="Forward trajectory for venue revenue">
+                                            <div className="chart-container">
+                                                <ResponsiveContainer>
+                                                    <BarChart data={[scissorData[0]]} margin={{top: 20, bottom: 20}}>
+                                                        <Bar dataKey="direction" radius={4} fill={PR_COLORS.rust} barSize={120} />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="text-lg font-black italic mt-10 text-center text-rust">Cafe spending is down NET 13% as consumers rationalise discretionary spend.</p>
+                                        </Card>
+                                        <Card title="2. Home Spend Shift" subtitle="Forward trajectory for retail beans">
+                                            <div className="chart-container">
+                                                <ResponsiveContainer>
+                                                    <BarChart data={[scissorData[1]]} margin={{top: 20, bottom: 20}}>
+                                                        <Bar dataKey="direction" radius={4} fill={PR_COLORS.blue} barSize={120} />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="text-lg font-black italic mt-10 text-center text-prblue">Home Specialty beans and pods are surging by NET 28%.</p>
+                                        </Card>
+                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                        <Card title="Visitation Rituals"><div className="space-y-12 py-6"><Stat label="3. Cafe Near Home" value="46%" sub="The Primary Weekday Hub" color="#1C355E" /><Stat label="4. Workplace Cafe" value="33%" sub="Declining vs Hybrid Work" color="#2A2A2A" /></div></Card>
+                                        <Card title="Market Parity"><div className="space-y-12 py-6"><Stat label="5. Home Espresso" value="44%" sub="Usage at Parity with Cafes" color="#1C355E" /><Stat label="6. Pod Utilisation" value="31%" sub="The Convenience Baseline" color="#2A2A2A" /></div></Card>
+                                        <div className="bg-prblue p-12 text-white flex flex-col justify-center rounded-sm shadow-2xl relative overflow-hidden">
+                                            <Zap className="mb-8 text-gold relative z-10" size={56} />
+                                            <h4 className="text-xs font-black uppercase tracking-widest mb-6 italic opacity-70 relative z-10">Economic Visual Check</h4>
+                                            <p className="text-2xl font-black italic leading-tight relative z-10">The 'Scissor' pattern is accelerating: 1 in 10 customers are cutting cafe spend while increasing home bean purchases simultaneously.</p>
+                                            <div className="absolute -bottom-10 -right-10 opacity-5 rotate-12"><Coffee size={300} /></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SECTION 4: DEEP ANALYTICS (FULL 10 CHARTS) */}
+                            {activeTab === 'deep' && (
+                                <div className="space-y-20 animate-fade-in">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                        <Card title="The Generational Pivot" subtitle="Drink Temperature Preference by Age Group">
+                                            <div className="chart-container">
+                                                <ResponsiveContainer>
+                                                    <BarChart data={generationalShift}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                        <XAxis dataKey="age" tick={{fontSize: 12, fontWeight: 'bold'}} />
+                                                        <YAxis hide />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Legend wrapperStyle={{paddingTop: '20px'}} />
+                                                        <Bar name="Hot Preference" dataKey="hot" fill={PR_COLORS.charcoal} radius={[4, 4, 0, 0]} />
+                                                        <Bar name="Cold Preference" dataKey="cold" fill={PR_COLORS.blue} radius={[4, 4, 0, 0]} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="mt-10 text-sm font-bold text-charcoal italic border-t pt-6">Insight: Gen Z (18 to 24) is the first generation to prefer cold coffee over hot, representing a fundamental shift in workflow requirements.</p>
+                                        </Card>
+                                        <Card title="The Global Anchor Effect" subtitle="Willingness to pay (Standard vs Post-Benchmark context)">
+                                            <div className="chart-container">
+                                                <ResponsiveContainer>
+                                                    <AreaChart data={anchorEffect}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                        <XAxis dataKey="price" tick={{fontWeight: 'bold'}} />
+                                                        <YAxis hide />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Area name="Standard W.T.P" type="monotone" dataKey="before" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.1} strokeWidth={4} />
+                                                        <Area name="Post Global Benchmark" type="monotone" dataKey="after" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.3} strokeWidth={4} />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="mt-10 text-sm font-bold text-charcoal italic border-t pt-6">Insight: Sharing global pricing benchmarks ($9 to $15 AUD) increases local price tolerance by 35pp at the $6.00 price point.</p>
+                                        </Card>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                        <Card title="Spend vs Financial Status" subtitle="Intended spend by household pressure">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={pressureData} layout="vertical" margin={{left: 20}}>
+                                                        <YAxis dataKey="status" type="category" width={110} tick={{fontSize: 10, fontWeight: 'bold'}} axisLine={false} />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Bar dataKey="trajectory" radius={[0, 4, 4, 0]}>
+                                                            {pressureData.map((e, i) => <Cell key={i} fill={e.trajectory > 0 ? PR_COLORS.blue : PR_COLORS.rust} />)}
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                        <Card title="Equipment Adoption Radar" subtitle="Specialty Enthusiasts vs Convenience Baseline">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={equipmentRadar}>
+                                                        <PolarGrid />
+                                                        <PolarAngleAxis dataKey="subject" tick={{fontSize: 11, fontWeight: '900'}} />
+                                                        <Radar name="Enthusiasts" dataKey="A" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.6} />
+                                                        <Radar name="Convenience" dataKey="B" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.4} />
+                                                        <Tooltip />
+                                                    </RadarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                        <Card title="The Suburban Migration" subtitle="Location shift comparison 2025 to 2026">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={suburbanMigration}>
+                                                        <XAxis dataKey="location" tick={{fontSize: 11, fontWeight: 'bold'}} />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Bar name="2025" dataKey="wave2025" fill={PR_COLORS.gray} />
+                                                        <Bar name="2026" dataKey="wave2026" fill={PR_COLORS.blue} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                        <Card title="Alt-Milk Tolerance by Segment" subtitle="% willing to pay $0.50 plus premium for alternative milk">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={milkTolerance} layout="vertical" margin={{left: 40}}>
+                                                        <XAxis type="number" hide />
+                                                        <YAxis dataKey="segment" type="category" width={110} tick={{fontSize: 11, fontWeight: '900', fill: '#1C355E'}} axisLine={false} />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Bar dataKey="pay" fill={PR_COLORS.blue} barSize={30} radius={[0, 6, 6, 0]} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                        <Card title="The Indulgence Index" subtitle="Interest in innovation coffee (Biscoff, Tiramisu) by age">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <AreaChart data={indulgenceIndex}>
+                                                        <XAxis dataKey="age" tick={{fontSize: 12, fontWeight: 'bold'}} />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Area type="monotone" dataKey="interest" stroke={PR_COLORS.rust} fill={PR_COLORS.rust} fillOpacity={0.2} strokeWidth={6} />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                        <Card title="Brand Affinity Matrix" subtitle="Awareness (X) vs Actual Purchase Intent (Y)">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
+                                                        <CartesianGrid strokeDasharray="3 3" />
+                                                        <XAxis type="number" dataKey="awareness" name="Awareness" unit="%" domain={[0, 100]} />
+                                                        <YAxis type="number" dataKey="trial" name="Intent" unit="%" domain={[0, 100]} />
+                                                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                                                        <Scatter name="Brands" data={brandConversion} fill={PR_COLORS.blue}>
+                                                            {brandConversion.map((e, i) => (<Cell key={i} fill={i === 1 ? PR_COLORS.blue : PR_COLORS.gold} />))}
+                                                        </Scatter>
+                                                    </ScatterChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                        <Card title="Subscription Momentum" subtitle="Wave interest in bean delivery models">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={subGrowth} margin={{left: 40, right: 40}}>
+                                                        <XAxis dataKey="period" tick={{fontSize: 12, fontWeight: 'bold'}} />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={80}>
+                                                            {subGrowth.map((e, i) => (<Cell key={i} fill={i === 1 ? PR_COLORS.blue : PR_COLORS.gray} />))}
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="text-[11px] font-black uppercase text-center mt-6 text-prblue">NET +8% growth in specialty coffee subscriptions.</p>
+                                        </Card>
+                                        <Card title="Value Driver Matrix" subtitle="Taste Importance vs Price Sensitivity">
+                                            <div className="chart-container" style={{height: '250px'}}>
+                                                <ResponsiveContainer>
+                                                    <ScatterChart>
+                                                        <CartesianGrid strokeDasharray="3 3" />
+                                                        <XAxis type="number" dataKey="x" name="Taste" domain={[0, 100]} />
+                                                        <YAxis type="number" dataKey="y" name="Price" domain={[0, 100]} />
+                                                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                                                        <Scatter data={driverMatrix} fill={PR_COLORS.charcoal} />
+                                                    </ScatterChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SECTION 5: PRICING & VALUE */}
+                            {activeTab === 'pricing' && (
+                                <div className="space-y-16 animate-fade-in">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                        <Card title="Price Sensitivity Meter (PSM)" subtitle="Threshold sentiment for Small Flat White" className="lg:col-span-2">
+                                            <div className="chart-container">
+                                                <ResponsiveContainer>
+                                                    <AreaChart data={priceSensitivity}>
+                                                        <XAxis dataKey="price" tick={{fontSize: 14, fill: '#2A2A2A', fontWeight: 'black'}} axisLine={false} tickLine={false} />
+                                                        <YAxis hide />
+                                                        <Tooltip formatter={(v) => `${v}%`} />
+                                                        <Area type="monotone" dataKey="bargain" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.4} name="Bargain Perception" strokeWidth={6} />
+                                                        <Area type="monotone" dataKey="expensive" stroke={PR_COLORS.rust} fill={PR_COLORS.rust} fillOpacity={0.1} name="Expensive Threshold" strokeWidth={2} />
+                                                        <Area type="monotone" dataKey="quality" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.05} name="Quality Question Point" strokeWidth={1} />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                        <Card title="Strategic Benchmarks" className="bg-white border-4 border-prblue flex flex-col justify-center shadow-2xl p-12 space-y-20 text-center">
+                                            <div className="space-y-4">
+                                                <span className="text-[11px] uppercase font-black opacity-60 tracking-[0.2em]">Indifference Point</span>
+                                                <div className="text-7xl font-black text-prblue tracking-tighter">$5.90</div>
+                                            </div>
+                                            <div className="border-t border-gray-100 pt-16 space-y-4">
+                                                <span className="text-[11px] uppercase font-black opacity-60 tracking-[0.2em]">Optimal Price Point</span>
+                                                <div className="text-[100px] font-black text-[#1A1A1A] tracking-tighter leading-none">$5.95</div>
+                                                <span className="text-[11px] font-black uppercase text-rust mt-8 block bg-red-50 py-2">Maximum conversion threshold</span>
+                                            </div>
+                                        </Card>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                        <Card title="Add-on Acceptance" subtitle="Willingness to pay premiums (Q5)">
+                                            <div className="space-y-10 py-6">
+                                                {addonsData.map((d, i) => (
+                                                    <div key={i} className="flex items-center justify-between group">
+                                                        <span className="text-sm font-black uppercase text-charcoal tracking-widest">{d.item}</span>
+                                                        <div className="flex items-center gap-8">
+                                                            <span className="text-base text-prblue font-black tracking-tight">{d.price}</span>
+                                                            <div className="w-56 h-4 bg-gray-100 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-prblue" style={{width: `${d.willingness}%`}}></div>
+                                                            </div>
+                                                            <span className="text-sm font-black w-12 text-right text-charcoal">{d.willingness}%</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </Card>
+                                        <div className="p-20 bg-prblue text-white flex flex-col justify-center rounded-sm shadow-2xl relative group hover:scale-[1.01] transition-transform">
+                                            <h4 className="font-black uppercase text-sm tracking-[0.3em] mb-12 opacity-60 italic border-b border-white/20 pb-6">Pricing Verdict</h4>
+                                            <p className="text-4xl font-black italic leading-tight text-white">96% of users accept a $1 premium for large cups. Specialty Enthusiasts are willing to pay $1.50 plus if origin quality is communicated.</p>
+                                            <div className="absolute bottom-10 right-10 opacity-10"><DollarSign size={120} /></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SECTION 6: RITUALS & DISCOVERY */}
+                            {activeTab === 'rituals' && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 animate-fade-in">
+                                    <Card title="Generational Ritual" subtitle="Hot vs Cold Temperature shift (Q6)">
+                                        <div className="space-y-16 py-8">
+                                            <Stat label="Gen Z Preference" value="62% Cold" color="#1C355E" sub="Discovery is cold:brewed" />
+                                            <Stat label="Boomer Preference" value="89% Hot" color="#2A2A2A" sub="Traditional coffee ritual" />
+                                        </div>
+                                    </Card>
+                                    <Card title="Discovery Channels" subtitle="Social vs Utility (Q16)">
+                                        <div className="chart-container">
+                                            <ResponsiveContainer>
+                                                <BarChart data={discoveryData} layout="vertical">
+                                                    <XAxis type="number" hide />
+                                                    <YAxis dataKey="name" type="category" width={110} tick={{fontSize: 11, fontWeight: '900', fill: '#1C355E' }} axisLine={false} tickLine={false} />
+                                                    <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 4, 4, 0]} barSize={24} />
+                                                    <Tooltip formatter={(v) => `${v}%`} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                        <p className="text-[11px] text-charcoal mt-12 uppercase font-black tracking-widest leading-tight text-center opacity-60">Google Maps remains a vital local utility for 17% of regular drinkers.</p>
+                                    </Card>
+                                    <Card title="Flavour Radar" subtitle="Engagement with LTO offerings (Q22)">
+                                        <div className="space-y-8 py-6">
+                                            {drinkTrends.map((t, i) => (
+                                                <div key={i} className="flex justify-between items-center border-b border-gray-100 pb-6">
+                                                    <span className="text-sm font-black uppercase text-charcoal tracking-widest">{t.name}</span>
+                                                    <span className="text-2xl font-black text-prblue">{t.interest}%</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </Card>
+                                </div>
+                            )}
+
+                            {/* SECTION 7: STRATEGIC SUMMARY */}
+                            {activeTab === 'final' && (
+                                <div className="animate-fade-in">
+                                    <div className="bg-prblue text-white p-24 rounded-sm shadow-2xl relative overflow-hidden">
+                                        <h2 className="text-[9rem] font-black uppercase italic tracking-tighter mb-16 leading-none">Strategic <br/>Verdict.</h2>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-10">
+                                            <div className="space-y-20">
+                                                <div className="border-l-[16px] border-gold pl-12 space-y-6">
+                                                    <h4 className="opacity-60 font-black uppercase text-sm tracking-widest">1. The Retail Pivot</h4>
+                                                    <p className="text-3xl font-black leading-relaxed text-white">Growth is now product:based rather than venue:based. Focus resources on capturing the home investment surge through premium whole bean and pod categories.</p>
+                                                </div>
+                                                <div className="border-l-[16px] border-gold pl-12 space-y-6">
+                                                    <h4 className="opacity-60 font-black uppercase text-sm tracking-widest">2. Price Anchoring</h4>
+                                                    <p className="text-3xl font-black leading-relaxed text-white">Standard cup prices must be anchored to global benchmarks ($8.50) to normalise local increases. Protect margins through add:ons like extra shots and large formats.</p>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-12">
+                                                {[
+                                                    { icon: Star, title: "Specialty Growth", desc: "Awareness of the term specialty coffee hit 60.1% this wave." },
+                                                    { icon: Zap, title: "Iced Innovation", desc: "Launch cold brew to win the 62% Gen Z share." },
+                                                    { icon: MapPin, title: "Suburban Core", desc: "Optimise venues in residential hubs over declining CBD sites." },
+                                                    { icon: Search, title: "Social First", desc: "TikTok leads trend discovery for younger segments." }
+                                                ].map((item, i) => (
+                                                    <div key={i} className="p-10 bg-white/10 backdrop-blur-xl border border-white/20 rounded-sm hover:bg-white/20 transition-all cursor-default flex flex-col items-center text-center">
+                                                        <item.icon className="text-gold mb-8" size={56} />
+                                                        <h5 className="font-black uppercase text-sm tracking-[0.2em] mb-6 text-white">{item.title}</h5>
+                                                        <p className="text-xs text-white font-black opacity-80 leading-relaxed italic">{item.desc}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="absolute -bottom-64 -right-64 opacity-5 rotate-12"><Coffee size={1000} strokeWidth={1} /></div>
+                                    </div>
+                                    <div className="mt-24 text-center max-w-4xl mx-auto space-y-12">
+                                        <p className="text-charcoal text-2xl italic leading-relaxed font-black">The 2026 data defines the Specialty Paradox: consumers are purchasing less often but demanding higher quality, ethical transparency, and flavour innovation when they do.</p>
+                                        <div className="pt-16 flex justify-center gap-20 opacity-30 grayscale font-black text-[14px] tracking-[0.6em]"><div>B:CORP CERTIFIED</div><div>CLIMATE ACTIVE</div><div>1% FOR THE PLANET</div></div>
+                                    </div>
+                                </div>
+                            )}
+                        </main>
+
+                        <footer className="max-w-7xl mx-auto px-10 py-24 border-t border-gray-200 mt-24 flex flex-col md:flex-row justify-between items-center gap-16">
+                            <div className="text-[12px] uppercase font-black tracking-[0.6em] text-gray-400 text-center md:text-left leading-relaxed">
+                                © 2026 Pablo and Rusty's Coffee Roasters : Data by Pollfish Australia : Strictly Internal Use
+                            </div>
+                            <div className="flex gap-16">
+                                <button className="text-[12px] font-black uppercase tracking-widest text-prblue hover:text-rust transition-colors underline decoration-2 underline-offset-8">Data Access</button>
+                                <button className="text-[12px] font-black uppercase tracking-widest text-prblue hover:text-rust transition-colors underline decoration-2 underline-offset-8">Export PDF</button>
+                            </div>
+                        </footer>
+                    </div>
                 );
             };
 
             const root = ReactDOM.createRoot(document.getElementById('root'));
-            root.render(React.createElement(App));
-        }
+            root.render(<App />);
+        };
 
-        loadNext(0);
-    })();
+        startApplication();
     </script>
 </body>
 </html>
