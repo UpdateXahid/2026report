@@ -7,8 +7,8 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     
     <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
     
@@ -27,36 +27,32 @@
         <div class="flex items-center justify-center h-screen bg-[#FDF9F3]">
             <div class="text-center">
                 <div class="w-12 h-12 border-4 border-[#1C355E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#1C355E]">Initialising Report...</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#1C355E]">Compiling Insights...</p>
             </div>
         </div>
     </div>
 
     <script type="text/babel">
-        // Wait for all libraries to attach to the window object
-        const startApp = () => {
+        // This function ensures React and Recharts are available before running the app
+        const runDashboard = () => {
             if (!window.React || !window.Recharts || !window.lucide) {
-                setTimeout(startApp, 100);
+                setTimeout(runDashboard, 100);
                 return;
             }
 
             const { 
                 BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-                PieChart, Pie, Cell, AreaChart, Area, Radar, RadarChart, PolarGrid, 
-                PolarAngleAxis, Legend, ScatterChart, Scatter, ZAxis, ComposedChart 
+                PieChart, Pie, Cell, AreaChart, Area, Legend, ComposedChart, Line, ScatterChart, Scatter 
             } = window.Recharts;
 
             const { 
-                TrendingUp, Home, Coffee, Users, Search, DollarSign, MapPin, 
-                Smartphone, ShoppingBag, Info, ArrowRight, ShieldCheck, Zap, Star, UserCheck, BarChart3 
+                TrendingUp, Coffee, ArrowRight, ShieldCheck, UserCheck, BarChart3, Info, DollarSign, Search, Zap, Star, MapPin
             } = window.lucide;
-
-            const PR_COLORS = { charcoal: '#2A2A2A', deepCharcoal: '#1A1A1A', gold: '#C5A059', rust: '#B94723', blue: '#1C355E' };
 
             const App = () => {
                 const [activeTab, setActiveTab] = React.useState('intro');
 
-                // --- DATA ---
+                // --- DATA REPOSITORY ---
                 const segmentData = [
                     { name: 'Specialty Enthusiasts', value: 27, desc: 'Quality obsessed: The core growth engine.' },
                     { name: 'Casual Drinkers', value: 24, desc: 'Socially motivated.' },
@@ -65,7 +61,6 @@
                     { name: 'Convenience Regulars', value: 14, desc: 'Routine driven: Pods and RTD.' }
                 ];
                 const generationalShift = [{ age: '18-24', hot: 38, cold: 62 }, { age: '25-34', hot: 52, cold: 48 }, { age: '35-44', hot: 65, cold: 35 }, { age: '45-54', hot: 78, cold: 22 }, { age: '55+', hot: 89, cold: 11 }];
-                const suburbanMigration = [{ location: 'Near Home', wave2025: 64, wave2026: 46 }, { location: 'Workplace', wave2025: 43, wave2026: 33 }, { location: 'CBD Centre', wave2025: 28, wave2026: 18 }];
                 const priceSensitivity = [{ price: 4.0, bargain: 90, expensive: 5 }, { price: 5.0, bargain: 50, expensive: 40 }, { price: 6.0, bargain: 10, expensive: 85 }];
                 const drinkTrends = [{ name: 'Biscoff Latte', interest: 84 }, { name: 'Tiramisu Latte', interest: 78 }, { name: 'Pistachio Latte', interest: 65 }, { name: 'Espresso Tonic', interest: 42 }];
 
@@ -98,7 +93,7 @@
                         <main className="max-w-7xl mx-auto px-8 py-12">
                             {activeTab === 'intro' && (
                                 <div className="max-w-4xl space-y-8 animate-in fade-in">
-                                    <h2 className="text-7xl font-black uppercase tracking-tighter leading-none text-charcoal">The Structural <br/> <span className="text-[#1C355E] italic">Inflection.</span></h2>
+                                    <h2 className="text-7xl font-black uppercase tracking-tighter leading-none text-[#2A2A2A]">The Structural <br/> <span className="text-[#1C355E] italic">Inflection.</span></h2>
                                     <p className="text-xl leading-relaxed text-charcoal font-medium">Analysing the Australian coffee landscape 2025 to 2026. A definitive study on shifting rituals and price tolerance across 750 respondents.</p>
                                     <div className="bg-white p-12 border-l-[16px] border-[#1C355E] shadow-xl text-3xl font-black italic text-charcoal">"We are moving from a growth by volume market to a growth by indulgence market."</div>
                                     <button onClick={() => setActiveTab('audiences')} className="bg-[#1C355E] text-white px-10 py-5 font-black uppercase tracking-widest flex items-center gap-4 hover:bg-black transition-all">Begin Analysis <ArrowRight size={20}/></button>
@@ -123,9 +118,9 @@
                                             </div>
                                         </Card>
                                         <Card title="Primary Target" className="border-4 border-[#1C355E] flex flex-col justify-center text-center bg-white shadow-2xl p-10">
-                                            <span className="text-[10px] uppercase font-black opacity-60">Growth Engine</span>
+                                            <span className="text-[10px] uppercase font-black opacity-60 text-charcoal">Growth Engine</span>
                                             <span className="text-8xl font-black tracking-tighter text-[#1C355E]">27%</span>
-                                            <span className="text-xs font-black uppercase mt-4">Specialty Enthusiasts</span>
+                                            <span className="text-xs font-black uppercase mt-4 text-charcoal">Specialty Enthusiasts</span>
                                         </Card>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -167,28 +162,6 @@
                                 </div>
                             )}
 
-                            {activeTab === 'rituals' && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                                    <Card title="Discovery & Trends">
-                                        <div className="space-y-8 py-4">
-                                            {drinkTrends.map((t,i) => (
-                                                <div key={i} className="flex justify-between items-center border-b pb-4">
-                                                    <span className="text-[11px] font-black uppercase text-[#2A2A2A]">{t.name}</span>
-                                                    <span className="text-xl font-black text-[#1C355E]">{t.interest}%</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </Card>
-                                    <Card title="Visual Ritual Summary" className="md:col-span-2 flex flex-col justify-center text-center p-16">
-                                        <div className="grid grid-cols-2 gap-10">
-                                            <div><div className="text-6xl font-black text-[#1C355E]">46%</div><div className="text-[10px] font-black uppercase mt-2">Cafe Near Home</div></div>
-                                            <div><div className="text-6xl font-black text-[#2A2A2A]">44%</div><div className="text-[10px] font-black uppercase mt-2">Home Espresso</div></div>
-                                        </div>
-                                        <p className="mt-12 text-lg font-bold italic border-t pt-8">Equipment usage has reached parity with cafe visitation for the first time.</p>
-                                    </Card>
-                                </div>
-                            )}
-
                             {activeTab === 'final' && (
                                 <div className="bg-[#1C355E] text-white p-20 rounded-sm shadow-2xl space-y-16 animate-in zoom-in-95">
                                     <h2 className="text-8xl font-black uppercase italic tracking-tighter mb-8 leading-none">Strategic <br/>Verdict.</h2>
@@ -217,8 +190,7 @@
             root.render(<App />);
         };
 
-        // Trigger the start logic
-        startApp();
+        runDashboard();
     </script>
 </body>
 </html>
