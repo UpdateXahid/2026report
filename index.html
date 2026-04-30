@@ -5,47 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 Cafe and Coffee Insights Report | Pablo & Rusty's</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
-    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
         body { font-family: 'Roboto', sans-serif; background-color: #FDF9F3; margin: 0; color: #2A2A2A; }
         .chart-container { height: 350px; width: 100%; margin: 20px 0; }
+        .loader { padding: 40px; font-family: sans-serif; color: #666; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
- 
+    <div id="root"><div class="loader">Loading…</div></div>
+
     <script>
-        window.addEventListener('load', function () {
-            const React = window.React;
-            const ReactDOM = window.ReactDOM;
- 
-            if (!window.Recharts) {
+    // Sequential loader — guarantees order regardless of CDN behaviour.
+    (function () {
+        const scripts = [
+            'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
+            'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js',
+            'https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js',
+            'https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js'
+        ];
+
+        function loadNext(i) {
+            if (i >= scripts.length) return boot();
+            const s = document.createElement('script');
+            s.src = scripts[i];
+            s.crossOrigin = 'anonymous';
+            s.onload = function () { loadNext(i + 1); };
+            s.onerror = function () {
                 document.getElementById('root').innerHTML =
-                    '<div style="padding:40px;font-family:sans-serif;">Recharts failed to load. Check your network or CDN.</div>';
+                    '<div class="loader">Failed to load: ' + scripts[i] + '</div>';
+            };
+            document.head.appendChild(s);
+        }
+
+        function boot() {
+            const missing = [];
+            if (!window.React) missing.push('React');
+            if (!window.ReactDOM) missing.push('ReactDOM');
+            if (!window.PropTypes) missing.push('PropTypes');
+            if (!window.Recharts) missing.push('Recharts');
+            if (missing.length) {
+                document.getElementById('root').innerHTML =
+                    '<div class="loader">Missing globals: ' + missing.join(', ') + '</div>';
                 return;
             }
- 
+
+            const React = window.React;
+            const ReactDOM = window.ReactDOM;
             const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area } = window.Recharts;
- 
+
             const App = () => {
                 const [tab, setTab] = React.useState('intro');
- 
+
                 const segments = [
-                    { name: 'Specialty Enthusiasts', value: 27, desc: 'Quality obsessed: The core growth engine.' },
-                    { name: 'Casual Drinkers', value: 24, desc: 'Socially motivated: Third space focus.' },
-                    { name: 'Engaged Mainstream', value: 20, desc: 'Balanced regulars: Price sensitive.' },
-                    { name: 'Non Category', value: 16, desc: 'Low engagement participants.' },
-                    { name: 'Convenience Regulars', value: 14, desc: 'Routine driven: Pods and RTD.' }
+                    { name: 'Specialty Enthusiasts', value: 27 },
+                    { name: 'Casual Drinkers', value: 24 },
+                    { name: 'Engaged Mainstream', value: 20 },
+                    { name: 'Non Category', value: 16 },
+                    { name: 'Convenience Regulars', value: 14 }
                 ];
- 
+
                 const pricing = [
                     { p: 4.0, v: 90 }, { p: 5.0, v: 50 }, { p: 6.0, v: 10 }
                 ];
- 
+
                 const Nav = () => React.createElement('nav', { className: 'flex overflow-x-auto border-b bg-white sticky top-0 z-50 px-6' },
                     ['intro', 'audiences', 'pricing', 'summary'].map(t =>
                         React.createElement('button', {
@@ -56,7 +79,7 @@
                         }, t)
                     )
                 );
- 
+
                 const Header = () => React.createElement('header', { className: 'bg-white px-10 py-8 flex justify-between items-center border-b' },
                     React.createElement('div', { className: 'flex items-center gap-4' },
                         React.createElement('div', { className: 'w-10 h-10 bg-[#1C355E] flex items-center justify-center text-white rounded font-black' }, 'PR'),
@@ -64,7 +87,7 @@
                     ),
                     React.createElement('div', { className: 'text-[10px] font-black uppercase opacity-40' }, '2026 Insights Report')
                 );
- 
+
                 const Intro = () => React.createElement('div', { className: 'max-w-4xl space-y-8 py-10' },
                     React.createElement('h2', { className: 'text-7xl font-black uppercase tracking-tighter leading-none' },
                         'The Structural ', React.createElement('span', { className: 'text-[#1C355E] italic' }, 'Inflection.')
@@ -74,7 +97,7 @@
                         '"Consumers are trading frequency for intensity."'
                     )
                 );
- 
+
                 const Audiences = () => React.createElement('div', { className: 'space-y-10 py-10' },
                     React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-3 gap-8' },
                         React.createElement('div', { className: 'lg:col-span-2 bg-white p-8 border' },
@@ -99,7 +122,7 @@
                         )
                     )
                 );
- 
+
                 const Pricing = () => React.createElement('div', { className: 'py-10 grid grid-cols-1 lg:grid-cols-2 gap-8' },
                     React.createElement('div', { className: 'bg-white p-8 border' },
                         React.createElement('h3', { className: 'font-black uppercase text-sm mb-6' }, 'Price Sensitivity Meter'),
@@ -124,14 +147,14 @@
                         )
                     )
                 );
- 
+
                 const Summary = () => React.createElement('div', { className: 'py-20 bg-[#1C355E] text-white p-10 rounded shadow-2xl mt-10' },
                     React.createElement('h2', { className: 'text-6xl font-black italic uppercase' }, 'Strategic Verdict.'),
                     React.createElement('p', { className: 'text-2xl mt-6 font-bold leading-relaxed' },
                         'The home ritual is now structural. Anchor local prices to global $8.50 benchmarks.'
                     )
                 );
- 
+
                 return React.createElement('div', { className: 'min-h-screen pb-20' },
                     React.createElement(Header),
                     React.createElement(Nav),
@@ -142,14 +165,17 @@
                         tab === 'summary' && React.createElement(Summary)
                     ),
                     React.createElement('footer', { className: 'max-w-7xl mx-auto px-10 py-10 border-t text-[10px] font-black uppercase tracking-widest opacity-30 mt-20' },
-                        '© 2026 Pablo and Rusty\u2019s Coffee Roasters'
+                        '\u00A9 2026 Pablo and Rusty\u2019s Coffee Roasters'
                     )
                 );
             };
- 
+
             const root = ReactDOM.createRoot(document.getElementById('root'));
             root.render(React.createElement(App));
-        });
+        }
+
+        loadNext(0);
+    })();
     </script>
 </body>
 </html>
