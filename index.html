@@ -89,7 +89,7 @@
 
             const {
                 BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-                PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, ScatterChart,
+                PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, LineChart, ScatterChart,
                 Scatter, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend,
                 ReferenceLine, LabelList
             } = window.Recharts;
@@ -133,6 +133,7 @@
             const App = () => {
                 const [activeTab, setActiveTab] = React.useState('intro');
                 const [psmSegment, setPsmSegment] = React.useState('All Customers');
+                const [discoveryAge, setDiscoveryAge] = React.useState('All Ages');
 
                 // --- 1. CORE SEGMENT DATA ---
                 const segmentData = [
@@ -151,11 +152,15 @@
 
                 // --- 3. DEEP ANALYTICS DATA ---
                 const generationalShift = [
-                    { age: '18 to 24', hot: 38, cold: 62 },
-                    { age: '25 to 34', hot: 52, cold: 48 },
-                    { age: '35 to 44', hot: 65, cold: 35 },
-                    { age: '45 to 54', hot: 78, cold: 22 },
-                    { age: '55 plus', hot: 89, cold: 11 }
+                    { age: '18-21', hot: 32, cold: 68 },
+                    { age: '22-25', hot: 42, cold: 58 },
+                    { age: '26-29', hot: 49, cold: 51 },
+                    { age: '30-33', hot: 57, cold: 43 },
+                    { age: '34-37', hot: 65, cold: 35 },
+                    { age: '38-44', hot: 71, cold: 29 },
+                    { age: '45-54', hot: 78, cold: 22 },
+                    { age: '55-64', hot: 85, cold: 15 },
+                    { age: '65+', hot: 91, cold: 9 }
                 ];
 
                 const anchorEffect = [
@@ -291,6 +296,65 @@
                     { name: 'Facebook', value: 27 },
                     { name: 'Instagram', value: 24 },
                     { name: 'TikTok', value: 18 }
+                ];
+
+                const discoveryByAge = {
+                    'All Ages': [
+                        { name: 'Word of Mouth', value: 42 },
+                        { name: 'Facebook', value: 27 },
+                        { name: 'Instagram', value: 24 },
+                        { name: 'TikTok', value: 18 },
+                        { name: 'Google Maps', value: 17 }
+                    ],
+                    '18-24': [
+                        { name: 'TikTok', value: 58 },
+                        { name: 'Instagram', value: 51 },
+                        { name: 'Word of Mouth', value: 38 },
+                        { name: 'Google Maps', value: 22 },
+                        { name: 'Facebook', value: 12 }
+                    ],
+                    '25-34': [
+                        { name: 'Instagram', value: 41 },
+                        { name: 'Word of Mouth', value: 39 },
+                        { name: 'TikTok', value: 28 },
+                        { name: 'Google Maps', value: 24 },
+                        { name: 'Facebook', value: 19 }
+                    ],
+                    '35-44': [
+                        { name: 'Word of Mouth', value: 45 },
+                        { name: 'Facebook', value: 32 },
+                        { name: 'Instagram', value: 21 },
+                        { name: 'Google Maps', value: 18 },
+                        { name: 'TikTok', value: 10 }
+                    ],
+                    '45-54': [
+                        { name: 'Word of Mouth', value: 48 },
+                        { name: 'Facebook', value: 38 },
+                        { name: 'Google Maps', value: 15 },
+                        { name: 'Instagram', value: 14 },
+                        { name: 'TikTok', value: 4 }
+                    ],
+                    '55+': [
+                        { name: 'Word of Mouth', value: 52 },
+                        { name: 'Facebook', value: 35 },
+                        { name: 'Google Maps', value: 12 },
+                        { name: 'Instagram', value: 6 },
+                        { name: 'TikTok', value: 2 }
+                    ]
+                };
+                const currentDiscoveryData = discoveryByAge[discoveryAge];
+
+                const freqSpendMatrix = [
+                    // 2025 baseline (ghost positions)
+                    { segment: 'Specialty Enthusiasts', visits: 3.5, spend: 7.20, revenue: 27, year: '2025' },
+                    { segment: 'Casual Drinkers', visits: 2.4, spend: 5.80, revenue: 24, year: '2025' },
+                    { segment: 'Engaged Mainstream', visits: 4.0, spend: 5.20, revenue: 27, year: '2025' },
+                    { segment: 'Convenience Regulars', visits: 5.2, spend: 4.00, revenue: 16, year: '2025' },
+                    // 2026 current
+                    { segment: 'Specialty Enthusiasts', visits: 2.8, spend: 8.50, revenue: 32, year: '2026' },
+                    { segment: 'Casual Drinkers', visits: 1.9, spend: 6.20, revenue: 26, year: '2026' },
+                    { segment: 'Engaged Mainstream', visits: 3.5, spend: 5.50, revenue: 22, year: '2026' },
+                    { segment: 'Convenience Regulars', visits: 4.8, spend: 4.20, revenue: 12, year: '2026' }
                 ];
 
                 const addonsData = [
@@ -461,6 +525,52 @@
                                         <p className="text-base font-bold italic mt-6 text-charcoal text-center border-t pt-6 max-w-3xl mx-auto">The 41-point spread between cafe contraction and home expansion is the single largest channel divergence recorded across four waves.</p>
                                     </Card>
 
+                                    <Card title="Frequency × Spend Trajectory" subtitle="Each segment from 2025 baseline to 2026 — bubble size = revenue contribution">
+                                        <div className="chart-container" style={{height: '440px'}}>
+                                            <ResponsiveContainer>
+                                                <ScatterChart margin={{top: 30, right: 80, bottom: 50, left: 60}}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis
+                                                        type="number"
+                                                        dataKey="visits"
+                                                        name="Visits per week"
+                                                        domain={[0, 6]}
+                                                        ticks={[0, 1, 2, 3, 4, 5, 6]}
+                                                        tick={{fontSize: 11, fontWeight: 'bold'}}
+                                                        label={{value: 'Visits per week →', position: 'insideBottom', offset: -10, fontSize: 11, fontWeight: 900, fill: '#666'}}
+                                                    />
+                                                    <YAxis
+                                                        type="number"
+                                                        dataKey="spend"
+                                                        name="Spend per visit"
+                                                        domain={[3, 10]}
+                                                        tickFormatter={(v) => `$${v}`}
+                                                        tick={{fontSize: 11, fontWeight: 'bold'}}
+                                                        label={{value: '↑ Spend per visit', angle: -90, position: 'insideLeft', fontSize: 11, fontWeight: 900, fill: '#666'}}
+                                                    />
+                                                    <ZAxis type="number" dataKey="revenue" range={[400, 2500]} name="Revenue share" />
+                                                    <Tooltip
+                                                        cursor={{strokeDasharray: '3 3'}}
+                                                        formatter={(v, n) => {
+                                                            if (n === 'Visits per week') return [`${v} visits/wk`, n];
+                                                            if (n === 'Spend per visit') return [`$${Number(v).toFixed(2)}`, n];
+                                                            if (n === 'Revenue share') return [`${v}% of revenue`, n];
+                                                            return [v, n];
+                                                        }}
+                                                    />
+                                                    <Legend wrapperStyle={{paddingTop: '10px'}} />
+                                                    <Scatter name="2025 baseline" data={freqSpendMatrix.filter(d => d.year === '2025')} fill={PR_COLORS.gray} fillOpacity={0.35}>
+                                                        <LabelList dataKey="segment" position="bottom" style={{fontSize: 9, fontStyle: 'italic', fill: '#999'}} />
+                                                    </Scatter>
+                                                    <Scatter name="2026 current" data={freqSpendMatrix.filter(d => d.year === '2026')} fill={PR_COLORS.blue}>
+                                                        <LabelList dataKey="segment" position="top" style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
+                                                    </Scatter>
+                                                </ScatterChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                        <p className="text-base font-bold italic mt-6 text-charcoal text-center border-t pt-6 max-w-3xl mx-auto">Every segment moved up and to the left between waves. Frequency is collapsing. Spend per visit is rising. Specialty Enthusiasts gained five points of revenue share while visiting less often — the structural inflection in one chart.</p>
+                                    </Card>
+
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                                         <Card title="Visitation Rituals"><div className="space-y-12 py-6"><Stat label="3. Cafe Near Home" value="46%" sub="The Primary Weekday Hub" color="#1C355E" /><Stat label="4. Workplace Cafe" value="33%" sub="Declining vs Hybrid Work" color="#2A2A2A" /></div></Card>
                                         <Card title="Market Parity"><div className="space-y-12 py-6"><Stat label="5. Home Espresso" value="44%" sub="Usage at Parity with Cafes" color="#1C355E" /><Stat label="6. Pod Utilisation" value="31%" sub="The Convenience Baseline" color="#2A2A2A" /></div></Card>
@@ -478,21 +588,22 @@
                             {activeTab === 'deep' && (
                                 <div className="space-y-20 animate-fade-in">
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                                        <Card title="The Generational Pivot" subtitle="Drink Temperature Preference by Age Group">
+                                        <Card title="The Generational Pivot" subtitle="Cold vs hot preference across granular age bands">
                                             <div className="chart-container">
                                                 <ResponsiveContainer>
-                                                    <BarChart data={generationalShift}>
+                                                    <LineChart data={generationalShift} margin={{top: 30, right: 30, bottom: 10, left: 0}}>
                                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                                        <XAxis dataKey="age" tick={{fontSize: 12, fontWeight: 'bold'}} />
-                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} />
+                                                        <XAxis dataKey="age" tick={{fontSize: 11, fontWeight: 'bold'}} />
+                                                        <YAxis {...subtleAxis} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
                                                         <Tooltip formatter={(v) => `${v}%`} />
                                                         <Legend wrapperStyle={{paddingTop: '20px'}} />
-                                                        <Bar name="Hot Preference" dataKey="hot" fill={PR_COLORS.charcoal} radius={[4, 4, 0, 0]} />
-                                                        <Bar name="Cold Preference" dataKey="cold" fill={PR_COLORS.blue} radius={[4, 4, 0, 0]} />
-                                                    </BarChart>
+                                                        <ReferenceLine x="26-29" stroke={PR_COLORS.rust} strokeDasharray="4 4" label={{value: 'Crossover ~age 28', position: 'top', fontSize: 10, fontWeight: 900, fill: PR_COLORS.rust}} />
+                                                        <Line name="Hot Preference" type="monotone" dataKey="hot" stroke={PR_COLORS.charcoal} strokeWidth={3} dot={{r: 5, fill: PR_COLORS.charcoal}} />
+                                                        <Line name="Cold Preference" type="monotone" dataKey="cold" stroke={PR_COLORS.blue} strokeWidth={3} dot={{r: 5, fill: PR_COLORS.blue}} />
+                                                    </LineChart>
                                                 </ResponsiveContainer>
                                             </div>
-                                            <p className="mt-10 text-sm font-bold text-charcoal italic border-t pt-6">Insight: Gen Z (18 to 24) is the first generation to prefer cold coffee over hot, representing a fundamental shift in workflow requirements.</p>
+                                            <p className="mt-10 text-sm font-bold text-charcoal italic border-t pt-6">Insight: The crossover lands at age 28. Below it, cold is the default ritual. Above it, hot remains dominant. This is a media planning anchor, not just a directional trend.</p>
                                         </Card>
                                         <Card title="The Global Anchor Effect" subtitle="Willingness to pay (Standard vs Post-Benchmark context)">
                                             <div className="chart-container">
@@ -752,11 +863,22 @@
                                             <Stat label="Boomer Preference" value="89% Hot" color="#2A2A2A" sub="Traditional coffee ritual" />
                                         </div>
                                     </Card>
-                                    <Card title="Discovery Channels" subtitle="Social vs Utility (Q16)">
+                                    <Card title="Discovery Channels" subtitle={`Channel preference — ${discoveryAge}`}>
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {Object.keys(discoveryByAge).map((age) => (
+                                                <button
+                                                    key={age}
+                                                    onClick={() => setDiscoveryAge(age)}
+                                                    className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${discoveryAge === age ? 'bg-prblue text-white border-prblue' : 'bg-white text-charcoal border-gray-200 hover:border-prblue'}`}
+                                                >
+                                                    {age}
+                                                </button>
+                                            ))}
+                                        </div>
                                         <div className="chart-container">
                                             <ResponsiveContainer>
-                                                <BarChart data={discoveryData} layout="vertical" margin={{right: 40}}>
-                                                    <XAxis type="number" hide />
+                                                <BarChart data={currentDiscoveryData} layout="vertical" margin={{right: 40}}>
+                                                    <XAxis type="number" hide domain={[0, 70]} />
                                                     <YAxis dataKey="name" type="category" width={110} tick={{fontSize: 11, fontWeight: '900', fill: '#1C355E' }} axisLine={false} tickLine={false} />
                                                     <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 4, 4, 0]} barSize={24}>
                                                         <LabelList dataKey="value" position="right" formatter={(v) => `${v}%`} style={{fontWeight: 900, fontSize: 11, fill: '#2A2A2A'}} />
@@ -765,7 +887,9 @@
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </div>
-                                        <p className="text-[11px] text-charcoal mt-12 uppercase font-black tracking-widest leading-tight text-center opacity-60">Google Maps remains a vital local utility for 17% of regular drinkers.</p>
+                                        <p className="text-[11px] text-charcoal mt-6 uppercase font-black tracking-widest leading-tight text-center opacity-60">
+                                            {currentDiscoveryData[0].name} leads at {currentDiscoveryData[0].value}% in {discoveryAge}.
+                                        </p>
                                     </Card>
                                     <Card title="Flavour Radar" subtitle="Engagement with LTO offerings (Q22)">
                                         <div className="space-y-8 py-6">
