@@ -6,10 +6,8 @@
     <title>2026 Cafe and Coffee Insights Report | Pablo & Rusty's</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    
     <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -32,16 +30,13 @@
     </div>
 
     <script type="text/babel">
-        // POLLING INITIALISER: Wait for CDNs to attach to window
-        const checkLibraries = () => {
-            if (window.React && window.Recharts && window.lucide) {
-                renderApp();
-            } else {
-                setTimeout(checkLibraries, 50);
+        const startApp = () => {
+            // Confirm all global objects exist before running
+            if (!window.React || !window.Recharts || !window.lucide) {
+                setTimeout(startApp, 100);
+                return;
             }
-        };
 
-        const renderApp = () => {
             const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend, ScatterChart, Scatter, ZAxis } = window.Recharts;
             const { TrendingUp, Coffee, Info, ArrowRight, ShieldCheck, Zap, Star, UserCheck, BarChart3, DollarSign, Search, MapPin } = window.lucide;
 
@@ -59,11 +54,11 @@
                 ];
 
                 const generationalShift = [
-                    { age: '18-24', hot: 38, cold: 62 },
-                    { age: '25-34', hot: 52, cold: 48 },
-                    { age: '35-44', hot: 65, cold: 35 },
-                    { age: '45-54', hot: 78, cold: 22 },
-                    { age: '55+', hot: 89, cold: 11 }
+                    { age: '18 to 24', hot: 38, cold: 62 },
+                    { age: '25 to 34', hot: 52, cold: 48 },
+                    { age: '35 to 44', hot: 65, cold: 35 },
+                    { age: '45 to 54', hot: 78, cold: 22 },
+                    { age: '55 plus', hot: 89, cold: 11 }
                 ];
 
                 const drinkTrends = [
@@ -112,7 +107,7 @@
                                 <div className="max-w-4xl space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                                     <h2 className="text-8xl font-black uppercase tracking-tighter leading-none text-charcoal">The Structural <br/> <span className="text-[#1C355E] italic underline decoration-8 underline-offset-8">Inflection.</span></h2>
                                     <p className="text-2xl leading-relaxed text-charcoal font-medium">Analysing the Australian coffee landscape 2025 to 2026. A definitive study on shifting rituals and price tolerance across 750 respondents.</p>
-                                    <div className="bg-white p-16 border-l-[20px] border-[#1C355E] shadow-2xl text-4xl font-black italic text-charcoal leading-tight">"We are moving from a growth by volume market to a growth by indulgence market."</div>
+                                    <div className="bg-white p-16 border-l-[20px] border-[#1C355E] shadow-2xl text-4xl font-black italic text-charcoal leading-tight text-center">"We are moving from a growth by volume market to a growth by indulgence market."</div>
                                     <button onClick={() => setActiveTab('audiences')} className="bg-[#1C355E] text-white px-12 py-6 text-base font-black uppercase tracking-widest flex items-center gap-4 hover:bg-black transition-all shadow-xl">Begin Analysis <ArrowRight size={24}/></button>
                                 </div>
                             )}
@@ -136,6 +131,7 @@
                                         </Card>
                                         <Card title="Primary Growth Target" className="border-4 border-[#1C355E] flex flex-col justify-center text-center bg-white shadow-2xl p-10">
                                             <Stat label="Market Engine" value="27%" sub="Specialty Enthusiasts" color="#1C355E"/>
+                                            <p className="text-sm mt-6 font-black uppercase tracking-tight text-[#1C355E]">Only cohort showing positive cafe spend intent in 2026.</p>
                                         </Card>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -153,7 +149,7 @@
                             {activeTab === 'deep' && (
                                 <div className="space-y-12 animate-in fade-in duration-500">
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                                        <Card title="The Generational Pivot" subtitle="Hot vs Cold drink preference (Wave comparison)">
+                                        <Card title="The Generational Pivot" subtitle="Hot vs Cold preference (Wave comparison)">
                                             <div className="chart-container">
                                                 <ResponsiveContainer>
                                                     <BarChart data={generationalShift}>
@@ -166,12 +162,11 @@
                                                     </BarChart>
                                                 </ResponsiveContainer>
                                             </div>
-                                            <p className="mt-8 text-xs font-bold text-charcoal italic">Insight: 62% of Gen Z participants now prefer iced formats over traditional hot beverages.</p>
                                         </Card>
                                         <div className="bg-[#1C355E] text-white p-12 flex flex-col justify-center rounded-sm space-y-8 shadow-2xl">
                                             <Zap className="text-[#C5A059]" size={48}/>
                                             <h4 className="text-xl font-black uppercase italic tracking-widest underline decoration-[#C5A059]">Equipment Parity Report</h4>
-                                            <p className="text-2xl font-black leading-tight italic">For the first time in survey history, home espresso machine usage (44%) has reached parity with weekly cafe visitation frequency.</p>
+                                            <p className="text-3xl font-black leading-tight italic">For the first time in survey history, home espresso machine usage (44%) has reached parity with weekly cafe visitation frequency.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -229,9 +224,9 @@
                             )}
 
                             {activeTab === 'final' && (
-                                <div className="bg-[#1C355E] text-white p-24 rounded-sm shadow-2xl space-y-20 animate-in zoom-in-95 duration-1000">
+                                <div className="bg-[#1C355E] text-white p-24 rounded-sm shadow-2xl space-y-20 animate-in zoom-in-95 duration-1000 text-center">
                                     <h2 className="text-9xl font-black uppercase italic tracking-tighter leading-none">Strategic <br/>Verdict.</h2>
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 text-left">
                                         <div className="border-l-8 border-[#C5A059] pl-12 space-y-6">
                                             <h4 className="text-[#C5A059] font-black uppercase text-sm tracking-widest">Growth Directive</h4>
                                             <p className="text-4xl font-black leading-tight">The home ritual is now structural. Focus resources on premium whole bean retail and high:performance specialty pods.</p>
@@ -259,7 +254,7 @@
             root.render(<App />);
         };
 
-        checkLibraries();
+        startApp();
     </script>
 </body>
 </html>
