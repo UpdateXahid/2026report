@@ -28,665 +28,425 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Destructure Recharts components for global access
         const { 
             BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
             PieChart, Pie, Cell, AreaChart, Area, ComposedChart, Line, ScatterChart, 
             Scatter, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend 
         } = window.Recharts;
 
-        // Destructure Lucide icons
         const { 
             TrendingUp, Home, Coffee, Users, Search, DollarSign, MapPin, 
             Smartphone, ShoppingBag, Info, ArrowRight, ShieldCheck, Zap, Star, UserCheck, BarChart3 
         } = lucide;
 
-        // PASTE YOUR ENTIRE REACT CODE BELOW STARTING FROM "const PR_COLORS = ..."
-        // Note: Change "export default App;" at the end to "const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<App />);"
-
-const PR_COLORS = {
-  charcoal: '#2A2A2A', 
-  cream: '#FDF9F3', 
-  gold: '#C5A059',
-  rust: '#B94723', 
-  blue: '#1C355E', 
-  gray: '#757575',
-  lightGray: '#E5E5E5'
-};
-
-const App = () => {
-  const [activeTab, setActiveTab] = useState('intro');
-
-  // --- DATA REPOSITORY ---
-  const scissorData = [
-    { name: 'Cafe Spend', direction: -13, fill: PR_COLORS.rust },
-    { name: 'Home Spend', direction: 28, fill: PR_COLORS.blue },
-  ];
-
-  const segmentData = [
-    { name: 'Specialty Enthusiasts', value: 27, desc: 'Quality obsessed: The core growth engine for cafes and beans.' },
-    { name: 'Casual Drinkers', value: 24, desc: 'Socially motivated: View the cafe as a third space for social events.' },
-    { name: 'Engaged Mainstream', value: 20, desc: 'Balanced regulars: Prioritise flavour but remain price sensitive.' },
-    { name: 'Non Category', value: 16, desc: 'Low engagement: Infrequent coffee drinkers or non category participants.' },
-    { name: 'Convenience Regulars', value: 14, desc: 'Routine driven: Favour pods, RTD products, and speed of service.' },
-  ];
-
-  const generationalShift = [
-    { age: '18 to 24', hot: 38, cold: 62 },
-    { age: '25 to 34', hot: 52, cold: 48 },
-    { age: '35 to 44', hot: 65, cold: 35 },
-    { age: '45 to 54', hot: 78, cold: 22 },
-    { age: '55 plus', hot: 89, cold: 11 },
-  ];
-
-  const anchorEffect = [
-    { price: 4.0, before: 80, after: 95 },
-    { price: 5.0, before: 40, after: 75 },
-    { price: 6.0, before: 5, after: 45 },
-    { price: 7.0, before: 0, after: 15 },
-  ];
-
-  const pressureData = [
-    { status: 'Very Comfortable', trajectory: 15 },
-    { status: 'Fairly Comfortable', trajectory: 4 },
-    { status: 'Manageable', trajectory: -8 },
-    { status: 'Under Pressure', trajectory: -24 },
-    { status: 'Significant Pressure', trajectory: -42 },
-  ];
-
-  const equipmentRadar = [
-    { subject: 'Espresso', A: 90, B: 20, fullMark: 100 },
-    { subject: 'Pods', A: 15, B: 85, fullMark: 100 },
-    { subject: 'Filter', A: 45, B: 5, fullMark: 100 },
-    { subject: 'Manual', A: 60, B: 2, fullMark: 100 },
-    { subject: 'Instant', A: 5, B: 70, fullMark: 100 },
-  ];
-
-  const suburbanMigration = [
-    { location: 'Near Home', wave2025: 64, wave2026: 46 },
-    { location: 'Workplace', wave2025: 43, wave2026: 33 },
-  ];
-
-  const milkTolerance = [
-    { segment: 'Specialty', pay: 85 },
-    { segment: 'Mainstream', pay: 72 },
-    { segment: 'Casual', pay: 60 },
-    { segment: 'Convenience', pay: 45 },
-    { segment: 'Non-Cat', pay: 30 },
-  ];
-
-  const indulgenceIndex = [
-    { age: '18-24', interest: 92 },
-    { age: '25-34', interest: 85 },
-    { age: '35-44', interest: 70 },
-    { age: '45-54', interest: 45 },
-    { age: '55+', interest: 20 },
-  ];
-
-  const priceSensitivity = [
-    { price: 4.0, bargain: 90, expensive: 5, qualityQuest: 60 },
-    { price: 4.5, bargain: 75, expensive: 15, qualityQuest: 40 },
-    { price: 5.0, bargain: 50, expensive: 40, qualityQuest: 15 },
-    { price: 5.5, bargain: 25, expensive: 65, qualityQuest: 5 },
-    { price: 6.0, bargain: 10, expensive: 85, qualityQuest: 2 },
-  ];
-
-  const discoveryData = [
-    { name: 'W.O.M', value: 42 },
-    { name: 'Facebook', value: 27 },
-    { name: 'Instagram', value: 24 },
-    { name: 'TikTok', value: 18 },
-    { name: 'Maps/Search', value: 17 },
-  ];
-
-  const addonsData = [
-    { item: 'Large Size', willingness: 96, price: '+$1.00' },
-    { item: 'Extra Shot', willingness: 87, price: '+$0.50' },
-    { item: 'Iced Version', willingness: 73, price: '+$1.00' },
-    { item: 'Alt Milk', willingness: 68, price: '+$0.50' },
-  ];
-
-  const drinkTrends = [
-    { name: 'Biscoff Latte', interest: 84 },
-    { name: 'Tiramisu Latte', interest: 78 },
-    { name: 'Pistachio Latte', interest: 65 },
-    { name: 'Espresso Tonic', interest: 42 },
-  ];
-
-  // --- UI COMPONENTS ---
-  const Card = ({ title, children, subtitle, className = "" }) => (
-    <div className={`bg-white p-6 border border-gray-200 rounded-sm shadow-sm hover:shadow-md transition-shadow ${className}`}>
-      <h3 className="text-sm font-black uppercase tracking-widest text-[#2A2A2A] mb-1">{title}</h3>
-      {subtitle && <p className="text-[10px] uppercase text-gray-400 font-bold mb-6 tracking-wider">{subtitle}</p>}
-      {children}
-    </div>
-  );
-
-  const Stat = ({ label, value, sub, color = PR_COLORS.charcoal }) => (
-    <div className="flex flex-col">
-      <span className="text-[10px] uppercase font-black tracking-widest text-[#2A2A2A] opacity-60">{label}</span>
-      <span className="text-6xl font-black tracking-tighter" style={{ color: color }}>{value}</span>
-      {sub && <span className="text-[12px] mt-2 uppercase font-black tracking-tight text-[#2A2A2A]">{sub}</span>}
-    </div>
-  );
-
-  const TabButton = ({ id, label, icon: Icon }) => (
-    <button
-      onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all shrink-0 ${
-        activeTab === id 
-        ? 'border-[#1C355E] text-[#1C355E] font-bold' 
-        : 'border-transparent text-gray-500 hover:text-[#1C355E]'
-      }`}
-    >
-      <Icon size={16} />
-      <span className="text-[11px] uppercase tracking-widest leading-none">{label}</span>
-    </button>
-  );
-
-  return (
-    <div className="min-h-screen bg-[#FDF9F3] text-[#2A2A2A] antialiased" style={{ fontFamily: "'Roboto', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet" />
-
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-8 py-8 flex justify-between items-end">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-[#1C355E] flex items-center justify-center rounded-sm">
-                <Coffee className="text-white" size={28} />
-            </div>
-            <div>
-                <h1 className="text-3xl font-black tracking-tighter uppercase italic text-[#2A2A2A] leading-none">
-                Pablo & Rusty's
-                </h1>
-                <p className="text-[11px] tracking-[0.3em] uppercase text-[#1C355E] font-bold mt-2">
-                2026 Cafe and Coffee Insights Report
-                </p>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest border-l border-gray-200 pl-6">
-            <div className="text-[#2A2A2A] uppercase tracking-tighter opacity-60">Segment sample: <span className="text-[#1C355E]">N:750</span></div>
-            <div className="text-[#2A2A2A] uppercase tracking-tighter opacity-60">Cycle: <span className="text-[#1C355E]">Q1 2026</span></div>
-          </div>
-        </div>
-        
-        <nav className="max-w-7xl mx-auto px-8 flex overflow-x-auto no-scrollbar border-t border-gray-100">
-          <TabButton id="intro" label="Introduction" icon={Info} />
-          <TabButton id="audiences" label="Audience Profiles" icon={UserCheck} />
-          <TabButton id="summary" label="The Market Pulse" icon={TrendingUp} />
-          <TabButton id="deep" label="Deep Analytics" icon={BarChart3} />
-          <TabButton id="pricing" label="Price and Value" icon={DollarSign} />
-          <TabButton id="rituals" label="Rituals and Discovery" icon={Search} />
-          <TabButton id="final" label="Strategic Summary" icon={ShieldCheck} />
-        </nav>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-8 py-12">
-        
-        {/* TAB 1: INTRODUCTION */}
-        {activeTab === 'intro' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl">
-            <h2 className="text-6xl font-black uppercase tracking-tighter mb-8 leading-none">
-              The Structural <br/> 
-              <span className="text-[#1C355E] italic underline decoration-4 underline-offset-8">Inflection.</span>
-            </h2>
-            <div className="space-y-6 text-lg text-[#2A2A2A] leading-relaxed">
-              <p>
-                In 2026, the Australian coffee market has reached a crossroads. This report analyses two waves of consumer data from 2025 to 2026 to decode how economic pressure, hybrid work, and Gen Z preferences are fundamentally reshaping the industry.
-              </p>
-              <div className="bg-white p-10 border-l-[12px] border-[#1C355E] shadow-2xl relative">
-                <p className="italic font-bold text-2xl text-[#2A2A2A] leading-tight">
-                  "We are no longer in a growth by volume market. We are in a growth by indulgence market. Consumers are trading frequency for intensity, buying fewer coffees but demanding much higher specialty value when they do."
-                </p>
-                <div className="absolute top-2 right-4 text-[#1C355E] opacity-10 italic font-serif text-8xl leading-none select-none">"</div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10">
-                <div className="space-y-2 p-8 bg-[#1C355E] text-white rounded-sm shadow-xl">
-                  <h4 className="font-black uppercase tracking-widest text-xs opacity-70">Research Objective</h4>
-                  <p className="text-lg font-bold">Identify the 'Specialty Enthusiast' profile and map the structural shift from Cafe:led to Home:led rituals.</p>
-                </div>
-                <div className="space-y-2 p-8 bg-[#2A2A2A] text-white rounded-sm">
-                  <h4 className="font-black uppercase tracking-widest text-xs opacity-70">Methodology</h4>
-                  <p className="text-lg font-bold">Weighted against ABS 2025 marginals (State x Age x Gender). 95% confidence level with plus or minus 3.5% margin of error.</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setActiveTab('audiences')}
-                className="mt-12 bg-[#1C355E] text-white px-10 py-5 text-sm font-black uppercase tracking-widest hover:bg-[#2A2A2A] transition-all shadow-xl shadow-blue-100 inline-flex items-center gap-4"
-              >
-                Define Audiences <ArrowRight size={20} />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: AUDIENCE PROFILES */}
-        {activeTab === 'audiences' && (
-          <div className="space-y-10 animate-in fade-in duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <Card title="Audience Breakdown" subtitle="Distribution across 750 participants" className="lg:col-span-2">
-                <div className="h-80 mt-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={segmentData} layout="vertical" margin={{ left: 80, right: 60 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E5E5" />
-                      <XAxis type="number" hide />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
-                        width={180} 
-                        tick={{fontSize: 12, fontWeight: '900', fill: '#1C355E', textAnchor: 'end'}} 
-                        axisLine={false} 
-                        tickLine={false} 
-                      />
-                      <Tooltip 
-                        cursor={{fill: '#FDF9F3'}} 
-                        formatter={(value) => [`${value}%`, 'Market Share']}
-                        contentStyle={{ borderRadius: '0px', border: '1px solid #2A2A2A', backgroundColor: '#FFFFFF', fontWeight: 'bold' }}
-                      />
-                      <Bar dataKey="value" fill={PR_COLORS.blue} radius={[0, 2, 2, 0]} barSize={32}>
-                        {segmentData.map((entry, index) => (
-                           <Cell key={index} fill={index === 0 ? PR_COLORS.blue : index === 4 ? PR_COLORS.rust : PR_COLORS.charcoal} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-6 p-4 bg-gray-50 border border-gray-100 rounded-sm">
-                   <p className="text-xs text-[#2A2A2A] italic font-medium leading-relaxed uppercase tracking-tighter">Note: Segmentation is based on behavioural clusters including visit frequency, spending trajectory, and equipment ownership.</p>
-                </div>
-              </Card>
-              
-              <div className="space-y-6">
-                 <Card title="Key Segment Focus" className="border-4 border-[#1C355E] p-10 flex flex-col justify-center min-h-[300px] bg-white shadow-2xl">
-                    <Stat label="Primary Growth Engine" value="27%" sub="Specialty Enthusiasts" color={PR_COLORS.blue} />
-                    <p className="text-lg mt-8 text-[#2A2A2A] leading-relaxed font-black uppercase tracking-tighter">This segment is the only cohort showing a NET positive spending intent for cafe visits in 2026.</p>
-                 </Card>
-                 <Card title="The Convenience Core" className="p-10 border-2 border-gray-200 shadow-lg flex flex-col justify-center min-h-[150px] bg-white">
-                    <Stat label="Daily Pod or RTD Users" value="14%" sub="Convenience Regulars" color={PR_COLORS.rust} />
-                 </Card>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-               {segmentData.map((seg, i) => (
-                 <div key={i} className="p-6 bg-white border border-gray-200 rounded-sm hover:border-[#1C355E] transition-all group">
-                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#1C355E] transition-colors">
-                       <span className="text-sm font-black text-[#1C355E] group-hover:text-white">{seg.value}%</span>
-                    </div>
-                    <h4 className="text-xs font-black uppercase tracking-widest mb-3 leading-tight text-[#1C355E]">{seg.name}</h4>
-                    <p className="text-xs text-[#2A2A2A] leading-relaxed font-black opacity-80">{seg.desc}</p>
-                 </div>
-               ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: MARKET PULSE */}
-        {activeTab === 'summary' && (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <Card title="1. Cafe Spend Shift" subtitle="Forward trajectory for venues">
-                <div className="h-48 mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={scissorData.filter(d => d.name === 'Cafe Spend')}>
-                      <XAxis dataKey="name" hide />
-                      <Bar dataKey="direction" radius={2} fill={PR_COLORS.rust} />
-                      <Tooltip cursor={{fill: 'transparent'}} formatter={(val) => [`${val}%`, 'Change']} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <p className="text-[10px] text-[#2A2A2A] mt-4 leading-tight italic font-black">
-                  Cafe spending is down NET 13% as consumers rationalise discretionary spend.
-                </p>
-              </Card>
-
-              <Card title="2. Home Spend Shift" subtitle="Forward trajectory for retail">
-                <div className="h-48 mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={scissorData.filter(d => d.name === 'Home Spend')}>
-                      <XAxis dataKey="name" hide />
-                      <Bar dataKey="direction" radius={2} fill={PR_COLORS.blue} />
-                      <Tooltip cursor={{fill: 'transparent'}} formatter={(val) => [`${val}%`, 'Change']} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <p className="text-[10px] text-[#2A2A2A] mt-4 leading-tight italic font-black">
-                  Home Specialty beans and pods are surging by NET 28%.
-                </p>
-              </Card>
-
-              <div className="md:col-span-2 grid grid-cols-2 gap-8 h-full">
-                <Card title="Visitation Rituals" subtitle="Location Based Frequency">
-                  <div className="space-y-8 mt-4">
-                    <Stat label="3. Cafe Near Home" value="46%" sub="The primary weekday hub" color="#1C355E" />
-                    <Stat label="4. Workplace Cafe" value="33%" sub="Declining due to hybrid work models" color="#2A2A2A" />
-                  </div>
-                </Card>
-                <Card title="Market Parity" subtitle="Equipment vs Ritual">
-                  <div className="space-y-8 mt-4">
-                    <Stat label="5. Home Espresso" value="44%" sub="Usage at parity with cafes" color="#1C355E" />
-                    <Stat label="6. Pod Utilisation" value="31%" sub="The convenience segment baseline" color="#2A2A2A" />
-                  </div>
-                </Card>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card title="7 to 9. The Knowledge Gap" subtitle="Growth Over 12 Months">
-                <div className="space-y-10 mt-4">
-                  <Stat label="7. Specialty Awareness" value="60.1%" color="#1C355E" sub="Grew from 54% in 2025" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Stat label="8. Espresso Machine" value="35%" color="#2A2A2A" />
-                    <Stat label="9. Filter or Manual" value="16%" color="#2A2A2A" />
-                  </div>
-                </div>
-              </Card>
-              <div className="bg-[#1C355E] p-10 text-white flex flex-col justify-center rounded-sm">
-                 <Zap className="mb-6 text-[#C5A059]" size={32} />
-                 <h4 className="text-xs font-black uppercase tracking-widest mb-3">Visual Check</h4>
-                 <p className="text-lg font-black italic leading-snug">
-                   The 'Scissor' pattern is accelerating. 1 in 10 customers are cutting cafe spend while increasing home bean purchases simultaneously.
-                 </p>
-              </div>
-              <Card title="10. Segment Intent" subtitle="Positive Spending Forecast">
-                 <Stat label="Specialty Cohort" value="+9%" sub="Forward cafe spend intent" color="#1C355E" />
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: DEEP ANALYTICS */}
-        {activeTab === 'deep' && (
-          <div className="space-y-12 animate-in fade-in duration-500">
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card title="The Generational Pivot" subtitle="Hot vs Cold drink preference by age group">
-                   <div className="h-80 mt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <BarChart data={generationalShift} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="age" tick={{fontSize: 10, fontWeight: 'bold'}} />
-                            <YAxis tick={{fontSize: 10}} />
-                            <Tooltip formatter={(val) => `${val}%`} />
-                            <Legend />
-                            <Bar name="Hot Preference" dataKey="hot" fill={PR_COLORS.charcoal} radius={[2, 2, 0, 0]} />
-                            <Bar name="Cold Preference" dataKey="cold" fill={PR_COLORS.blue} radius={[2, 2, 0, 0]} />
-                         </BarChart>
-                      </ResponsiveContainer>
-                   </div>
-                   <p className="text-xs text-[#2A2A2A] mt-6 italic font-bold leading-relaxed">Gen Z (18 to 24) is the first generation to prefer cold coffee over hot, representing a fundamental shift in cafe equipment and workflow requirements.</p>
-                </Card>
-
-                <Card title="The Global Anchor Effect" subtitle="Willingness to pay before vs after global price context">
-                   <div className="h-80 mt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <AreaChart data={anchorEffect}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="price" label={{ value: 'Price ($)', position: 'insideBottom', offset: -5 }} />
-                            <YAxis />
-                            <Tooltip formatter={(val) => `${val}%`} />
-                            <Area name="Standard Perception" type="monotone" dataKey="before" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.1} strokeWidth={3} />
-                            <Area name="Post Global Context" type="monotone" dataKey="after" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.3} strokeWidth={3} />
-                         </AreaChart>
-                      </ResponsiveContainer>
-                   </div>
-                   <p className="text-xs text-[#2A2A2A] mt-6 italic font-bold leading-relaxed">Sharing global pricing benchmarks ($9 to $15 AUD) increases local price tolerance by 35 percentage points at the $6.00 price point.</p>
-                </Card>
-             </div>
-
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <Card title="Spend vs Financial Status" subtitle="Forward spend trajectory by household pressure">
-                   <div className="h-64 mt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <ComposedChart data={pressureData} layout="vertical">
-                            <XAxis type="number" domain={[-50, 20]} hide />
-                            <YAxis dataKey="status" type="category" width={100} tick={{fontSize: 9, fontWeight: 'bold'}} axisLine={false} />
-                            <Tooltip formatter={(val) => `${val}%`} />
-                            <Bar dataKey="trajectory" radius={[0, 2, 2, 0]}>
-                               {pressureData.map((e, i) => <Cell key={i} fill={e.trajectory > 0 ? PR_COLORS.blue : PR_COLORS.rust} />)}
-                            </Bar>
-                         </ComposedChart>
-                      </ResponsiveContainer>
-                   </div>
-                </Card>
-
-                <Card title="Equipment Adoption Radar" subtitle="Specialty Enthusiasts vs Convenience regulars">
-                   <div className="h-64 mt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={equipmentRadar}>
-                            <PolarGrid />
-                            <PolarAngleAxis dataKey="subject" tick={{fontSize: 10, fontWeight: 'bold'}} />
-                            <Radar name="Enthusiasts" dataKey="A" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.6} />
-                            <Radar name="Convenience" dataKey="B" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.6} />
-                            <Tooltip />
-                         </RadarChart>
-                      </ResponsiveContainer>
-                   </div>
-                </Card>
-
-                <Card title="The Suburban Migration" subtitle="Purchase location shift 2025 to 2026">
-                   <div className="h-64 mt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <BarChart data={suburbanMigration}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="location" tick={{fontSize: 10, fontWeight: 'bold'}} />
-                            <YAxis tick={{fontSize: 9}} />
-                            <Tooltip formatter={(val) => `${val}%`} />
-                            <Legend iconSize={8} />
-                            <Bar name="2025" dataKey="wave2025" fill={PR_COLORS.gray} />
-                            <Bar name="2026" dataKey="wave2026" fill={PR_COLORS.blue} />
-                         </BarChart>
-                      </ResponsiveContainer>
-                   </div>
-                </Card>
-             </div>
-
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card title="Alt Milk Tolerance by Segment" subtitle="% willing to pay $0.50 plus premium for plant based milk">
-                   <div className="h-64 mt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <BarChart data={milkTolerance} layout="vertical">
-                            <XAxis type="number" hide />
-                            <YAxis dataKey="segment" type="category" width={100} tick={{fontSize: 10, fontWeight: '900', fill: '#1C355E'}} axisLine={false} tickLine={false} />
-                            <Tooltip formatter={(val) => `${val}%`} />
-                            <Bar dataKey="pay" fill={PR_COLORS.blue} barSize={20} radius={[0, 4, 4, 0]} />
-                         </BarChart>
-                      </ResponsiveContainer>
-                   </div>
-                </Card>
-
-                <Card title="The Indulgence Index" subtitle="Interest in dessert coffee (Biscoff, Tiramisu) by age group">
-                   <div className="h-64 mt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <AreaChart data={indulgenceIndex}>
-                            <XAxis dataKey="age" tick={{fontSize: 10, fontWeight: 'bold'}} />
-                            <YAxis />
-                            <Tooltip formatter={(val) => `${val}%`} />
-                            <Area type="monotone" dataKey="interest" stroke={PR_COLORS.rust} fill={PR_COLORS.rust} fillOpacity={0.2} strokeWidth={3} />
-                         </AreaChart>
-                      </ResponsiveContainer>
-                   </div>
-                </Card>
-             </div>
-          </div>
-        )}
-
-        {/* TAB 5: PRICING & VALUE */}
-        {activeTab === 'pricing' && (
-          <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <Card title="Price Meter (PSM)" subtitle="Thresholds for Small Flat White" className="lg:col-span-2">
-                <div className="h-80 w-full mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={priceSensitivity}>
-                      <XAxis dataKey="price" tick={{fontSize: 12, fill: '#2A2A2A', fontWeight: 'bold'}} axisLine={false} tickLine={false} />
-                      <YAxis hide />
-                      <Tooltip formatter={(val) => [`${val}%`, 'Sentiment']} />
-                      <Area type="monotone" dataKey="bargain" stroke={PR_COLORS.blue} fill={PR_COLORS.blue} fillOpacity={0.4} name="11. Bargain" strokeWidth={5} />
-                      <Area type="monotone" dataKey="expensive" stroke={PR_COLORS.rust} fill={PR_COLORS.rust} fillOpacity={0.1} name="12. Expensive" />
-                      <Area type="monotone" dataKey="qualityQuest" stroke={PR_COLORS.charcoal} fill={PR_COLORS.charcoal} fillOpacity={0.1} name="13. Low Quality" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
-              <div className="space-y-8 h-full flex flex-col justify-between">
-                <Card title="Strategic Benchmarks" className="bg-white border-4 border-[#1C355E] flex-1 flex flex-col justify-center shadow-lg">
-                  <div className="space-y-12 py-4 px-4 text-center">
-                    <Stat label="14. Indifference Point" value="$5.90" color={PR_COLORS.blue} />
-                    <div className="border-t border-gray-100 pt-8">
-                       <Stat label="15. Optimal Price" value="$5.95" color={PR_COLORS.charcoal} />
-                    </div>
-                  </div>
-                </Card>
-                <Card title="16. Perception Gap" subtitle="The Anchor Problem">
-                  <Stat label="Perceived Global Avg" value="$8.50" sub="Vs local threshold of $6.00" color="#1C355E" />
-                </Card>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Card title="17 to 20. Add-on Premiums" subtitle="Willingness to Pay (Q5)">
-                <div className="space-y-6 mt-4">
-                  {addonsData.map((d, i) => (
-                    <div key={i} className="flex items-center justify-between group">
-                      <span className="text-[11px] font-black uppercase text-[#2A2A2A]">{i+17}. {d.item}</span>
-                      <div className="flex items-center gap-6">
-                        <span className="text-xs text-[#1C355E] font-black tracking-tight">{d.price}</span>
-                        <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#1C355E]" style={{width: `${d.willingness}%`}}></div>
-                        </div>
-                        <span className="text-xs font-black w-8 text-right text-[#2A2A2A]">{d.willingness}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-              <div className="p-10 bg-[#1C355E] text-white flex flex-col justify-center rounded-sm shadow-xl relative">
-                <h4 className="font-black uppercase text-xs tracking-[0.2em] mb-6 opacity-70 italic text-white">Pricing Conclusion</h4>
-                <p className="text-2xl font-black italic leading-tight text-white">
-                  96% of users accept a $1 premium for large cups. Specialty Enthusiasts are willing to pay $1.50 plus if origin quality is communicated.
-                </p>
-                <div className="absolute bottom-4 right-4 opacity-10">
-                   <DollarSign size={80} />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: RITUALS & DISCOVERY */}
-        {activeTab === 'rituals' && (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card title="Generational Shift" subtitle="Hot vs Cold Temperature (Q6)">
-                <div className="space-y-10 mt-4">
-                   <Stat label="Gen Z Preference" value="62% Cold" color="#1C355E" sub="Discovery is cold:brewed" />
-                   <Stat label="Boomer Preference" value="89% Hot" color="#2A2A2A" sub="Traditional hot coffee ritual" />
-                </div>
-              </Card>
-              <Card title="Channel Discovery" subtitle="Social vs Utility (Q16)">
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={discoveryData} layout="vertical">
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 9, fontStyle: 'italic', fontWeight: 'black', fill: '#1C355E' }} axisLine={false} tickLine={false} />
-                      <Bar dataKey="value" fill={PR_COLORS.blue} radius={2} barSize={12} />
-                      <Tooltip formatter={(val) => [`${val}%`, 'Frequency']} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <p className="text-[9px] text-[#2A2A2A] mt-4 uppercase font-black tracking-widest leading-tight text-center">
-                  21. Google Maps remains a vital local utility for 17% of regular drinkers.
-                </p>
-              </Card>
-              <Card title="22. Flavour Radar" subtitle="Engagement (Q22)">
-                <div className="space-y-4 mt-2">
-                   {drinkTrends.map((t, i) => (
-                     <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-2">
-                       <span className="text-[10px] font-black uppercase text-[#2A2A2A]">{t.name}</span>
-                       <span className="text-sm font-black" style={{ color: PR_COLORS.blue }}>{t.interest}%</span>
-                     </div>
-                   ))}
-                </div>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 6: STRATEGIC SUMMARY */}
-        {activeTab === 'final' && (
-          <div className="animate-in zoom-in-95 duration-500">
-             <div className="bg-[#1C355E] text-white p-14 relative overflow-hidden rounded-sm shadow-2xl">
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                  <div>
-                    <h2 className="text-6xl font-black uppercase italic tracking-tighter mb-8 leading-none">Strategic <br/>Summary.</h2>
-                    <div className="space-y-10">
-                      <div className="border-l-8 border-[#C5A059] pl-8">
-                        <h4 className="text-white opacity-70 font-black uppercase text-xs tracking-widest mb-3">1. The Retail Pivot</h4>
-                        <p className="text-xl font-black leading-relaxed text-white">
-                          Growth is now product:based rather than venue:based. Focus resources on capturing the home investment surge through premium whole bean and pod categories.
-                        </p>
-                      </div>
-                      <div className="border-l-8 border-[#C5A059] pl-8">
-                        <h4 className="text-white opacity-70 font-black uppercase text-xs tracking-widest mb-3">2. Price Anchoring</h4>
-                        <p className="text-xl font-black leading-relaxed text-white">
-                          Standard cup prices must be anchored to global benchmarks ($8.50) to normalise local increases. Protect margins through add:ons like extra shots and large formats.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-8">
-                    {[
-                      { icon: Star, title: "Specialty Growth", desc: "Awareness of the term specialty coffee hit 60.1% this wave." },
-                      { icon: Zap, title: "Iced Innovation", desc: "Nitro and cold brew are mandatory to win the 62% Gen Z share." },
-                      { icon: MapPin, title: "Suburban Core", desc: "Optimise venues in residential hubs over declining CBD sites." },
-                      { icon: Search, title: "Social First", desc: "TikTok leads trend discovery while Maps remains the search baseline." }
-                    ].map((item, i) => (
-                      <div key={i} className="p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-sm hover:bg-white/20 transition-all cursor-default">
-                        <item.icon className="text-[#C5A059] mb-6" size={32} />
-                        <h5 className="font-black uppercase text-xs tracking-widest mb-3 text-white">{item.title}</h5>
-                        <p className="text-sm text-white font-black opacity-90">{item.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-             </div>
-             
-             <div className="mt-16 text-center max-w-2xl mx-auto space-y-8">
-                <p className="text-xs uppercase font-black tracking-[0.8em] text-[#1C355E]">Executive Final Word</p>
-                <p className="text-[#2A2A2A] text-lg italic leading-relaxed font-black">
-                  The 2026 data defines the Specialty Paradox: consumers are purchasing less often but demanding higher quality and ethical transparency when they do. Winning brands will transition from being a simple utility to a non:negotiable daily ritual.
-                </p>
-                <div className="pt-10 flex justify-center gap-16 grayscale opacity-40">
-                  <div className="text-[10px] font-black tracking-widest leading-none">B:CORP CERTIFIED</div>
-                  <div className="text-[10px] font-black tracking-widest leading-none text-[#1C355E]">CLIMATE ACTIVE</div>
-                  <div className="text-[10px] font-black tracking-widest leading-none">1% FOR THE PLANET</div>
-                </div>
-             </div>
-          </div>
-        )}
-      </main>
-
-      <footer className="max-w-7xl mx-auto px-8 py-16 border-t border-gray-200 mt-12 flex flex-col md:flex-row justify-between items-center gap-10">
-         <div className="text-[10px] uppercase font-black tracking-[0.3em] text-gray-400 text-center md:text-left leading-relaxed">
-           Copyright 2026 Pablo and Rusty's Coffee Roasters : Research provided by Pollfish Australia
-         </div>
-         <div className="flex gap-10">
-            <button className="text-[10px] font-black uppercase tracking-widest text-[#1C355E] hover:text-[#2A2A2A] transition-colors underline decoration-2 underline-offset-4">Full Data Set</button>
-            <button className="text-[10px] font-black uppercase tracking-widest text-[#1C355E] hover:text-[#2A2A2A] transition-colors underline decoration-2 underline-offset-4">Export PDF</button>
-         </div>
-      </footer>
-    </div>
-  );
-};
-
-return (
-            <div className="min-h-screen bg-[#FDF9F3]">
-               {/* Dashboard Content */}
-            </div>
-          );
+        const PR_COLORS = {
+            charcoal: '#2A2A2A', 
+            deepCharcoal: '#1A1A1A',
+            cream: '#FDF9F3', 
+            gold: '#C5A059',
+            rust: '#B94723', 
+            blue: '#1C355E', 
+            gray: '#757575',
+            lightGray: '#E5E5E5'
         };
 
-        // Initialize the app
+        const App = () => {
+            const [activeTab, setActiveTab] = React.useState('intro');
+
+            // --- DATA REPOSITORY ---
+            const scissorData = [
+                { name: 'Cafe Spend', direction: -13, fill: PR_COLORS.rust },
+                { name: 'Home Spend', direction: 28, fill: PR_COLORS.blue },
+            ];
+
+            const segmentData = [
+                { name: 'Specialty Enthusiasts', value: 27, desc: 'Quality obsessed: The core growth engine for cafes and beans.' },
+                { name: 'Casual Drinkers', value: 24, desc: 'Socially motivated: View the cafe as a third space for social events.' },
+                { name: 'Engaged Mainstream', value: 20, desc: 'Balanced regulars: Prioritise flavour but remain price sensitive.' },
+                { name: 'Non Category', value: 16, desc: 'Low engagement: Infrequent coffee drinkers or non category participants.' },
+                { name: 'Convenience Regulars', value: 14, desc: 'Routine driven: Favour pods, RTD products, and speed of service.' },
+            ];
+
+            const generationalShift = [
+                { age: '18 to 24', hot: 38, cold: 62 },
+                { age: '25 to 34', hot: 52, cold: 48 },
+                { age: '35 to 44', hot: 65, cold: 35 },
+                { age: '45 to 54', hot: 78, cold: 22 },
+                { age: '55 plus', hot: 89, cold: 11 },
+            ];
+
+            const anchorEffect = [
+                { price: 4.0, before: 80, after: 95 },
+                { price: 5.0, before: 40, after: 75 },
+                { price: 6.0, before: 5, after: 45 },
+                { price: 7.0, before: 0, after: 15 },
+            ];
+
+            const pressureData = [
+                { status: 'Very Comfortable', trajectory: 15 },
+                { status: 'Fairly Comfortable', trajectory: 4 },
+                { status: 'Manageable', trajectory: -8 },
+                { status: 'Under Pressure', trajectory: -24 },
+                { status: 'Significant Pressure', trajectory: -42 },
+            ];
+
+            const equipmentRadar = [
+                { subject: 'Espresso', A: 90, B: 20, fullMark: 100 },
+                { subject: 'Pods', A: 15, B: 85, fullMark: 100 },
+                { subject: 'Filter', A: 45, B: 5, fullMark: 100 },
+                { subject: 'Manual', A: 60, B: 2, fullMark: 100 },
+                { subject: 'Instant', A: 5, B: 70, fullMark: 100 },
+            ];
+
+            const suburbanMigration = [
+                { location: 'Near Home', wave2025: 64, wave2026: 46 },
+                { location: 'Workplace', wave2025: 43, wave2026: 33 },
+            ];
+
+            const milkTolerance = [
+                { segment: 'Specialty', pay: 85 },
+                { segment: 'Mainstream', pay: 72 },
+                { segment: 'Casual', pay: 60 },
+                { segment: 'Convenience', pay: 45 },
+                { segment: 'Non-Cat', pay: 30 },
+            ];
+
+            const indulgenceIndex = [
+                { age: '18 to 24', interest: 92 },
+                { age: '25 to 34', interest: 85 },
+                { age: '35 to 44', interest: 70 },
+                { age: '45 to 54', interest: 45 },
+                { age: '55 plus', interest: 20 },
+            ];
+
+            const brandAffinity = [
+                { x: 80, y: 70, z: 400, name: 'Brand A' },
+                { x: 60, y: 40, z: 200, name: 'Brand B' },
+                { x: 40, y: 15, z: 150, name: 'Brand C' },
+                { x: 20, y: 10, z: 100, name: 'Brand D' },
+            ];
+
+            const valueDriverMatrix = [
+                { taste: 90, price: 30, name: 'Enthusiasts' },
+                { taste: 70, price: 60, name: 'Mainstream' },
+                { taste: 40, price: 90, name: 'Price Driven' },
+            ];
+
+            const priceSensitivity = [
+                { price: 4.0, bargain: 90, expensive: 5, qualityQuest: 60 },
+                { price: 4.5, bargain: 75, expensive: 15, qualityQuest: 40 },
+                { price: 5.0, bargain: 50, expensive: 40, qualityQuest: 15 },
+                { price: 5.5, bargain: 25, expensive: 65, qualityQuest: 5 },
+                { price: 6.0, bargain: 10, expensive: 85, qualityQuest: 2 },
+            ];
+
+            const discoveryData = [
+                { name: 'W.O.M', value: 42 },
+                { name: 'Facebook', value: 27 },
+                { name: 'Instagram', value: 24 },
+                { name: 'TikTok', value: 18 },
+                { name: 'Maps/Search', value: 17 },
+            ];
+
+            const addonsData = [
+                { item: 'Large Size', willingness: 96, price: '+$1.00' },
+                { item: 'Extra Shot', willingness: 87, price: '+$0.50' },
+                { item: 'Iced Version', willingness: 73, price: '+$1.00' },
+                { item: 'Alt Milk', willingness: 68, price: '+$0.50' },
+            ];
+
+            const drinkTrends = [
+                { name: 'Biscoff Latte', interest: 84 },
+                { name: 'Tiramisu Latte', interest: 78 },
+                { name: 'Pistachio Latte', interest: 65 },
+                { name: 'Espresso Tonic', interest: 42 },
+            ];
+
+            // --- UI HELPERS ---
+            const Card = ({ title, children, subtitle, className = "" }) => (
+                <div className={`bg-white p-6 border border-gray-200 rounded-sm shadow-sm hover:shadow-md transition-shadow ${className}`}>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-[#2A2A2A] mb-1">{title}</h3>
+                    {subtitle && <p className="text-[10px] uppercase text-gray-400 font-bold mb-6 tracking-wider">{subtitle}</p>}
+                    {children}
+                </div>
+            );
+
+            const Stat = ({ label, value, sub, color = PR_COLORS.charcoal, weight = 'font-black' }) => (
+                <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-[#2A2A2A] opacity-60">{label}</span>
+                    <span className={`text-6xl ${weight} tracking-tighter`} style={{ color: color }}>{value}</span>
+                    {sub && <span className="text-[12px] mt-2 uppercase font-black tracking-tight text-[#2A2A2A]">{sub}</span>}
+                </div>
+            );
+
+            const TabButton = ({ id, label, icon: Icon }) => (
+                <button
+                    onClick={() => setActiveTab(id)}
+                    className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all shrink-0 ${
+                        activeTab === id 
+                        ? 'border-[#1C355E] text-[#1C355E] font-bold' 
+                        : 'border-transparent text-gray-500 hover:text-[#1C355E]'
+                    }`}
+                >
+                    <Icon size={16} />
+                    <span className="text-[11px] uppercase tracking-widest leading-none">{label}</span>
+                </button>
+            );
+
+            return (
+                <div className="min-h-screen bg-[#FDF9F3] text-[#2A2A2A] antialiased">
+                    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+                        <div className="max-w-7xl mx-auto px-8 py-8 flex justify-between items-end">
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-[#1C355E] flex items-center justify-center rounded-sm">
+                                    <Coffee className="text-white" size={28} />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-black tracking-tighter uppercase italic text-[#2A2A2A] leading-none">Pablo & Rusty's</h1>
+                                    <p className="text-[11px] tracking-[0.3em] uppercase text-[#1C355E] font-bold mt-2">2026 Cafe and Coffee Insights Report</p>
+                                </div>
+                            </div>
+                            <div className="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest border-l border-gray-200 pl-6">
+                                <div className="text-[#2A2A2A] uppercase tracking-tighter opacity-60">Segment sample: <span className="text-[#1C355E]">N:750</span></div>
+                                <div className="text-[#2A2A2A] uppercase tracking-tighter opacity-60">Cycle: <span className="text-[#1C355E]">Q1 2026</span></div>
+                            </div>
+                        </div>
+                        <nav className="max-w-7xl mx-auto px-8 flex overflow-x-auto no-scrollbar border-t border-gray-100">
+                            <TabButton id="intro" label="Introduction" icon={Info} />
+                            <TabButton id="audiences" label="Audience Profiles" icon={UserCheck} />
+                            <TabButton id="summary" label="Market Pulse" icon={TrendingUp} />
+                            <TabButton id="deep" label="Deep Analytics" icon={BarChart3} />
+                            <TabButton id="pricing" label="Price and Value" icon={DollarSign} />
+                            <TabButton id="rituals" label="Rituals and Discovery" icon={Search} />
+                            <TabButton id="final" label="Strategic Summary" icon={ShieldCheck} />
+                        </nav>
+                    </header>
+
+                    <main className="max-w-7xl mx-auto px-8 py-12">
+                        {activeTab === 'intro' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl">
+                                <h2 className="text-6xl font-black uppercase tracking-tighter mb-8 leading-none">The Structural <br/> <span className="text-[#1C355E] italic underline decoration-4 underline-offset-8">Inflection.</span></h2>
+                                <div className="space-y-6 text-lg text-[#2A2A2A] leading-relaxed">
+                                    <p>In 2026, the Australian coffee market has reached a crossroads. This report analyses consumer data from 2025 to 2026 to decode how economic pressure and Gen Z preferences are reshaping the industry.</p>
+                                    <div className="bg-white p-10 border-l-[12px] border-[#1C355E] shadow-2xl relative">
+                                        <p className="italic font-bold text-2xl text-[#2A2A2A] leading-tight">"We are no longer in a growth by volume market. We are in a growth by indulgence market. Consumers are trading frequency for intensity, demanding higher specialty value."</p>
+                                    </div>
+                                    <button onClick={() => setActiveTab('audiences')} className="mt-12 bg-[#1C355E] text-white px-10 py-5 text-sm font-black uppercase tracking-widest hover:bg-[#2A2A2A] transition-all shadow-xl inline-flex items-center gap-4">Define Audiences <ArrowRight size={20} /></button>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'audiences' && (
+                            <div className="space-y-10 animate-in fade-in duration-500">
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    <Card title="Audience Breakdown" subtitle="750 participants" className="lg:col-span-2">
+                                        <div className="h-80 mt-6">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={segmentData} layout="vertical" margin={{ left: 80 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                                    <XAxis type="number" hide />
+                                                    <YAxis dataKey="name" type="category" width={180} tick={{fontSize: 12, fontWeight: '900', fill: '#1C355E'}} axisLine={false} tickLine={false} />
+                                                    <Tooltip formatter={(v) => `${v}%`} />
+                                                    <Bar dataKey="value" radius={[0, 2, 2, 0]} barSize={32}>
+                                                        {segmentData.map((e, i) => (<Cell key={i} fill={i === 0 ? PR_COLORS.blue : i === 4 ? PR_COLORS.rust : PR_COLORS.charcoal} />))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </Card>
+                                    <Card title="Key Segment Focus" className="border-4 border-[#1C355E] p-10 flex flex-col justify-center bg-white shadow-2xl">
+                                        <Stat label="Primary Growth" value="27%" sub="Specialty Enthusiasts" color={PR_COLORS.blue} />
+                                        <p className="text-lg mt-8 text-[#2A2A2A] leading-relaxed font-black uppercase tracking-tighter">Only cohort showing positive cafe spend intent in 2026.</p>
+                                    </Card>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'summary' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-500">
+                                <Card title="1. Cafe Spend Shift" subtitle="Forward trajectory">
+                                    <div className="h-48 mt-4">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={scissorData.filter(d => d.name === 'Cafe Spend')}>
+                                                <Bar dataKey="direction" radius={2} fill={PR_COLORS.rust} />
+                                                <Tooltip formatter={(v) => `${v}%`} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <p className="text-xs text-[#2A2A2A] font-black italic mt-4">Spend down NET 13% as consumers rationalise discretionary spend.</p>
+                                </Card>
+                                <Card title="2. Home Spend Shift" subtitle="Forward trajectory">
+                                    <div className="h-48 mt-4">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={scissorData.filter(d => d.name === 'Home Spend')}>
+                                                <Bar dataKey="direction" radius={2} fill={PR_COLORS.blue} />
+                                                <Tooltip formatter={(v) => `${v}%`} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <p className="text-xs text-[#2A2A2A] font-black italic mt-4">Specialty beans and pods surging by NET 28%.</p>
+                                </Card>
+                            </div>
+                        )}
+
+                        {activeTab === 'deep' && (
+                            <div className="space-y-12 animate-in fade-in duration-500">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <Card title="The Generational Pivot" subtitle="Hot vs Cold preference">
+                                        <div className="h-80">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={generationalShift}>
+                                                    <XAxis dataKey="age" tick={{fontSize: 10, fontWeight: 'bold'}} />
+                                                    <YAxis tick={{fontSize: 10}} />
+                                                    <Tooltip formatter={(v) => `${v}%`} />
+                                                    <Legend />
+                                                    <Bar name="Hot" dataKey="hot" fill={PR_COLORS.charcoal} />
+                                                    <Bar name="Cold" dataKey="cold" fill={PR_COLORS.blue} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </Card>
+                                    <Card title="The Global Anchor Effect" subtitle="Willingness to pay">
+                                        <div className="h-80">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <AreaChart data={anchorEffect}>
+                                                    <XAxis dataKey="price" />
+                                                    <Tooltip formatter={(v) => `${v}%`} />
+                                                    <Area name="Before Context" dataKey="before" fill={PR_COLORS.charcoal} fillOpacity={0.1} stroke={PR_COLORS.charcoal} />
+                                                    <Area name="After Context" dataKey="after" fill={PR_COLORS.blue} fillOpacity={0.3} stroke={PR_COLORS.blue} />
+                                                </AreaChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </Card>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    <Card title="Suburban Migration" subtitle="2025 to 2026 Shift">
+                                        <div className="h-64">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={suburbanMigration}>
+                                                    <XAxis dataKey="location" tick={{fontSize: 10}} />
+                                                    <Tooltip formatter={(v) => `${v}%`} />
+                                                    <Bar name="2025" dataKey="wave2025" fill={PR_COLORS.gray} />
+                                                    <Bar name="2026" dataKey="wave2026" fill={PR_COLORS.blue} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </Card>
+                                    <Card title="Brand Affinity" subtitle="Awareness vs Intent">
+                                        <div className="h-64">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <ScatterChart>
+                                                    <XAxis dataKey="x" domain={[0, 100]} />
+                                                    <YAxis dataKey="y" domain={[0, 100]} />
+                                                    <Tooltip />
+                                                    <Scatter data={brandAffinity} fill={PR_COLORS.blue} />
+                                                </ScatterChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </Card>
+                                    <Card title="Value Drivers" subtitle="Taste vs Price Importance">
+                                        <div className="h-64">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <ScatterChart>
+                                                    <XAxis dataKey="taste" domain={[0, 100]} />
+                                                    <YAxis dataKey="price" domain={[0, 100]} />
+                                                    <Tooltip />
+                                                    <Scatter data={valueDriverMatrix} fill={PR_COLORS.charcoal} />
+                                                </ScatterChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </Card>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'pricing' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
+                                <Card title="Price Meter" subtitle="Small Flat White Perception" className="lg:col-span-2">
+                                    <div className="h-80">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={priceSensitivity}>
+                                                <XAxis dataKey="price" />
+                                                <Tooltip formatter={(v) => `${v}%`} />
+                                                <Area dataKey="bargain" fill={PR_COLORS.blue} fillOpacity={0.4} stroke={PR_COLORS.blue} strokeWidth={4} />
+                                                <Area dataKey="expensive" fill={PR_COLORS.rust} fillOpacity={0.1} stroke={PR_COLORS.rust} />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </Card>
+                                <Card title="Strategic Benchmarks" className="bg-white border-4 border-[#1C355E] flex flex-col justify-center shadow-lg">
+                                    <div className="space-y-12 text-center">
+                                        <Stat label="Indifference Point" value="$5.90" color={PR_COLORS.blue} />
+                                        <div className="border-t pt-8">
+                                            <Stat label="Optimal Price" value="$5.95" color={PR_COLORS.deepCharcoal} weight="font-black" />
+                                        </div>
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
+                        {activeTab === 'rituals' && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in duration-500">
+                                <Card title="Generational Shift" subtitle="Hot vs Cold (Q6)">
+                                    <div className="space-y-10">
+                                        <Stat label="Gen Z" value="62% Cold" color="#1C355E" sub="Discovery is cold:brewed" />
+                                        <Stat label="Boomer" value="89% Hot" color="#2A2A2A" sub="Traditional ritual" />
+                                    </div>
+                                </Card>
+                                <Card title="Channel Discovery" subtitle="Social vs Utility (Q16)">
+                                    <div className="h-48">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={discoveryData} layout="vertical">
+                                                <XAxis type="number" hide />
+                                                <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 9, fontWeight: 'black', fill: '#1C355E' }} axisLine={false} tickLine={false} />
+                                                <Bar dataKey="value" fill={PR_COLORS.blue} barSize={12} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </Card>
+                                <Card title="Flavour Radar" subtitle="Engagement (Q22)">
+                                    <div className="space-y-4">
+                                        {drinkTrends.map((t, i) => (
+                                            <div key={i} className="flex justify-between border-b pb-2">
+                                                <span className="text-[10px] font-black uppercase">{t.name}</span>
+                                                <span className="text-sm font-black text-[#1C355E]">{t.interest}%</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
+                        {activeTab === 'final' && (
+                            <div className="animate-in zoom-in-95 duration-500">
+                                <div className="bg-[#1C355E] text-white p-14 rounded-sm shadow-2xl relative overflow-hidden">
+                                    <h2 className="text-6xl font-black uppercase italic tracking-tighter mb-8 leading-none">Strategic <br/>Summary.</h2>
+                                    <div className="space-y-10 relative z-10">
+                                        <div className="border-l-8 border-[#C5A059] pl-8">
+                                            <h4 className="opacity-70 font-black uppercase text-xs mb-3">1. The Retail Pivot</h4>
+                                            <p className="text-xl font-black leading-relaxed">Growth is now product:based. Focus on premium bean and pod categories.</p>
+                                        </div>
+                                        <div className="border-l-8 border-[#C5A059] pl-8">
+                                            <h4 className="opacity-70 font-black uppercase text-xs mb-3">2. Price Anchoring</h4>
+                                            <p className="text-xl font-black leading-relaxed">Anchor standard cup prices to global benchmarks ($8.50).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    <footer className="max-w-7xl mx-auto px-8 py-16 border-t mt-12 flex flex-col md:flex-row justify-between items-center gap-10">
+                        <div className="text-[10px] uppercase font-black tracking-[0.3em] text-gray-400">Copyright 2026 Pablo and Rusty's Coffee Roasters</div>
+                        <div className="flex gap-10">
+                            <button className="text-[10px] font-black uppercase text-[#1C355E] underline">Full Data Set</button>
+                            <button className="text-[10px] font-black uppercase text-[#1C355E] underline">Export PDF</button>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
